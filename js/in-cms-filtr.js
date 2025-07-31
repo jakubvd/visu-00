@@ -2,30 +2,39 @@ document.addEventListener('DOMContentLoaded', () => {
   const filterButtons = document.querySelectorAll('.home-insights_category-filter-link');
   const collectionItems = document.querySelectorAll('.insigts-cms-collection-list .w-dyn-item');
 
-  // Na starcie dodajemy klasę 'current' do przycisku 'all'
   const allButton = document.querySelector('.home-insights_category-filter-link[data-category="all"]');
-  if (allButton) {
-    allButton.classList.add('current');
-  }
+  if (allButton) allButton.classList.add('current');
 
   filterButtons.forEach(button => {
     button.addEventListener('click', () => {
-      // Usuwamy klasę 'current' ze wszystkich przycisków
       filterButtons.forEach(btn => btn.classList.remove('current'));
-      // Dodajemy klasę 'current' klikniętemu przyciskowi
       button.classList.add('current');
 
       const filterValue = button.getAttribute('data-category');
 
       collectionItems.forEach(item => {
-        const itemCategory = item.getAttribute('data-category');
+        // Fade out
+        item.classList.add('fade-out');
 
-        // Jeśli 'all' to pokazujemy wszystko, inaczej filtrujemy
-        if (filterValue === 'all' || itemCategory === filterValue) {
-          item.style.display = '';
-        } else {
-          item.style.display = 'none';
-        }
+        setTimeout(() => {
+          // Change display after fade-out
+          if (filterValue === 'all' || item.getAttribute('data-category') === filterValue) {
+            item.style.display = '';
+          } else {
+            item.style.display = 'none';
+          }
+
+          // Fade in only if visible
+          if (item.style.display !== 'none') {
+            item.classList.remove('fade-out');
+            item.classList.add('fade-in');
+          }
+        }, 200); // czas trwania fade-out
+
+        // Usuń fade-in po zakończeniu animacji, by można było ponownie dodać ją przy kolejnym kliknięciu
+        item.addEventListener('transitionend', () => {
+          item.classList.remove('fade-in');
+        }, { once: true });
       });
     });
   });
