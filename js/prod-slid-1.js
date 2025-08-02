@@ -15,7 +15,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Core slider state
     const swipeThreshold = 10;  // Minimum px to trigger swipe
-    let currentIndex = 0;       // Index of currently active card
+    let currentIndex = 0;       // Index of currently active card group (visible window)
     let cardWidth = 0;          // Width of a single card
     let isDragging = false;     // Is swipe active?
     let startX = 0;             // Start X position of swipe
@@ -23,6 +23,15 @@ document.addEventListener("DOMContentLoaded", function () {
     let prevTranslate = 0;      // Previous translate value
     let currentTranslate = 0;   // Current translate during swipe
     let isArrowClick = false;   // Track if navigation was from arrow
+    let visibleCardsCount = 1;  // How many cards are visible at once
+    // Helper: count how many cards fit in the viewport at once
+    function getVisibleCardsCount() {
+        // Assumes the parent of sliderWrap is the viewport (with overflow:hidden)
+        const sliderViewport = sliderWrap.parentElement;
+        if (!sliderViewport) return 1;
+        const viewportWidth = sliderViewport.offsetWidth;
+        return Math.floor(viewportWidth / cardWidth) || 1;
+    }
 
     // Utility: get card width (assumes all cards same width)
     function getCardWidth() {
@@ -32,7 +41,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Enable or disable arrows based on current position
     function updateArrows() {
-        const maxIndex = getCards().length - 1;
+        cards = getCards();
+        // Compute max index so that last visible group is fully in view (no overscroll/blank)
+        const maxIndex = Math.max(cards.length - visibleCardsCount, 0);
         if (leftArrow) {
             if (currentIndex === 0) {
                 leftArrow.classList.add("is-disabled");
@@ -41,7 +52,7 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         }
         if (rightArrow) {
-            if (currentIndex === maxIndex) {
+            if (currentIndex >= maxIndex) {
                 rightArrow.classList.add("is-disabled");
             } else {
                 rightArrow.classList.remove("is-disabled");
@@ -49,15 +60,18 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
-    // Move the slider to next/previous card (direction: 'left' = next, 'right' = previous)
+    // Move the slider to next/previous group (direction: 'left' = next, 'right' = previous)
     function moveSlider(direction) {
         cards = getCards();
-        const maxIndex = cards.length - 1;
+        // Compute max index so that last visible group is fully in view (no overscroll/blank)
+        const maxIndex = Math.max(cards.length - visibleCardsCount, 0);
         if (direction === "left" && currentIndex < maxIndex) {
             currentIndex++;
         } else if (direction === "right" && currentIndex > 0) {
             currentIndex--;
         }
+        // Clamp currentIndex so it cannot exceed maxIndex (prevents overscroll/blank)
+        currentIndex = Math.max(0, Math.min(currentIndex, maxIndex));
         // Use linear for both swipe and arrow (arrow just slightly slower)
         sliderWrap.style.transition = isArrowClick
             ? "transform 0.5s ease-out" // Arrow click: slightly slower
@@ -94,8 +108,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
         currentTranslate = prevTranslate + diffX;
 
-        // Boundaries: no sliding past first/last card
-        const maxTranslate = -(getCards().length - 1) * cardWidth;
+        // Boundaries: no sliding past first/last visible group
+        const maxTranslate = -(getCards().length - visibleCardsCount) * cardWidth;
         const minTranslate = 0;
         currentTranslate = Math.max(Math.min(currentTranslate, minTranslate), maxTranslate);
 
@@ -122,12 +136,17 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
-    // Handle window resize: re-calculate card width and adjust slider position
+    // Handle window resize: re-calculate card width, visible count and adjust slider position
     function handleResize() {
         cardWidth = getCardWidth();
+        visibleCardsCount = getVisibleCardsCount();
+        // Clamp currentIndex to valid range after resize
+        const maxIndex = Math.max(getCards().length - visibleCardsCount, 0);
+        currentIndex = Math.max(0, Math.min(currentIndex, maxIndex));
         prevTranslate = -currentIndex * cardWidth;
         sliderWrap.style.transform = `translateX(${prevTranslate}px)`;
         sliderWrap.style.transition = "none";
+        updateArrows();
     }
 
     // Bind all necessary event listeners
@@ -164,6 +183,7 @@ document.addEventListener("DOMContentLoaded", function () {
     // Initialize slider: set up, bind listeners, update state
     function initSlider() {
         cardWidth = getCardWidth();
+        visibleCardsCount = getVisibleCardsCount();
         sliderWrap.style.transform = `translateX(0)`;
         sliderWrap.style.transition = "none";
         addEventListeners();
