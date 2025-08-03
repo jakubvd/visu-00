@@ -1,70 +1,34 @@
-// Custom "Load More" logic for Webflow CMS lists
-// by VisionDevs x ChatGPT | 100% custom, supports multiple lists
-
+// Custom Load More for Webflow CMS
 document.addEventListener('DOMContentLoaded', function () {
-  // Wszystkie listy na stronie z atrybutem data-cms-list
-  const cmsLists = document.querySelectorAll('[data-cms-list]');
+  const btn = document.querySelector('.load-more-btn[data-cms-list]');
+  const list = document.querySelector('.insights-cms-collection-list[data-cms-list]');
+  if (!btn || !list) return;
 
-  // Mapujemy numer aktualnej strony dla każdej listy
-  const pageMap = new WeakMap();
+  let page = 1;
 
-  // Ustawiamy na każdej liście start na 1 stronie
-  cmsLists.forEach(list => pageMap.set(list, 1));
-
-  // Globalny event delegation dla przycisków "Load More"
-  document.body.addEventListener('click', function (e) {
-    const btn = e.target.closest('a.load-more-btn[data-cms-list]');
-    if (!btn) return;
-
+  btn.addEventListener('click', function (e) {
     e.preventDefault();
-
-    // Pobierz nazwę listy z data-cms-list
-    const listName = btn.getAttribute('data-cms-list');
-    // Znajdź listę po data-cms-list
-    const list = document.querySelector(`[data-cms-list="${listName}"]`);
-    if (!list) return;
-
-    // Znajdź kontener .w-dyn-items W TEJ liście
-    const dynItems = list.querySelector('.w-dyn-items');
-    if (!dynItems) {
-      console.warn('Nie znaleziono .w-dyn-items w:', list);
-      return;
-    }
-
-    // Strona (page) dla tej listy
-    let currentPage = pageMap.get(list) || 1;
-    currentPage++;
-    pageMap.set(list, currentPage);
-
-    // Budujemy URL do następnej strony
-    let nextPageUrl = window.location.pathname + '?page=' + currentPage;
-
-    // UI: blokada i info o ładowaniu
-    btn.disabled = true;
+    page++;
     btn.textContent = 'Loading...';
+    btn.disabled = true;
 
-    // Pobieramy HTML kolejnej strony
+    // Budujemy URL paginacji
+    const nextPageUrl = window.location.pathname + '?page=' + page;
+
     fetch(nextPageUrl)
       .then(res => res.text())
       .then(html => {
+        // Parse i wyciągamy TYLKO .w-dyn-items[data-cms-list="insights"]
         const parser = new DOMParser();
         const doc = parser.parseFromString(html, 'text/html');
-
-        // Z NOWEJ strony pobieramy TYLKO items z odpowiadającej listy
-        const newList = doc.querySelector(`[data-cms-list="${listName}"]`);
-        const newDynItems = newList ? newList.querySelector('.w-dyn-items') : null;
-
-        if (newDynItems && newDynItems.children.length > 0) {
-          // Dodajemy tylko pojedyncze dzieci z .w-dyn-items (nie całą listę!)
-          Array.from(newDynItems.children).forEach(item => {
-            // Importujemy do docelowej .w-dyn-items
-            dynItems.appendChild(item);
+        const newItems = doc.querySelector('.insights-cms-collection-list[data-cms-list="insights"]');
+        if (newItems && newItems.children.length) {
+          Array.from(newItems.children).forEach(child => {
+            list.appendChild(child);
           });
-
-          btn.disabled = false;
           btn.textContent = 'Load More';
+          btn.disabled = false;
         } else {
-          // Brak nowych itemów — chowamy button
           btn.style.display = 'none';
         }
       })
