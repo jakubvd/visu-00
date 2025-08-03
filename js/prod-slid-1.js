@@ -39,11 +39,19 @@ document.addEventListener("DOMContentLoaded", function () {
         return cards[0] ? cards[0].offsetWidth : 0;
     }
 
+    // Helper: calculate the max index so the last card is fully visible (premium UX)
+    function getMaxIndex() {
+        const totalCardsWidth = cards.length * cardWidth;
+        const viewportWidth = sliderWrap.parentElement.offsetWidth;
+        const maxTranslate = totalCardsWidth - viewportWidth;
+        return Math.max(Math.ceil(maxTranslate / cardWidth), 0);
+    }
+
     // Enable or disable arrows based on current position
     function updateArrows() {
         cards = getCards();
         // Compute max index so that last visible group is fully in view (no overscroll/blank)
-        const maxIndex = Math.max(cards.length - visibleCardsCount, 0);
+        const maxIndex = getMaxIndex();
         if (leftArrow) {
             if (currentIndex === 0) {
                 leftArrow.classList.add("is-disabled");
@@ -64,7 +72,7 @@ document.addEventListener("DOMContentLoaded", function () {
     function moveSlider(direction) {
         cards = getCards();
         // Compute max index so that last visible group is fully in view (no overscroll/blank)
-        const maxIndex = Math.max(cards.length - visibleCardsCount, 0);
+        const maxIndex = getMaxIndex();
         if (direction === "left" && currentIndex < maxIndex) {
             currentIndex++;
         } else if (direction === "right" && currentIndex > 0) {
@@ -141,7 +149,7 @@ document.addEventListener("DOMContentLoaded", function () {
         cardWidth = getCardWidth();
         visibleCardsCount = getVisibleCardsCount();
         // Clamp currentIndex to valid range after resize
-        const maxIndex = Math.max(getCards().length - visibleCardsCount, 0);
+        const maxIndex = getMaxIndex();
         currentIndex = Math.max(0, Math.min(currentIndex, maxIndex));
         prevTranslate = -currentIndex * cardWidth;
         sliderWrap.style.transform = `translateX(${prevTranslate}px)`;
