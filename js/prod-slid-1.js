@@ -1,4 +1,23 @@
 document.addEventListener("DOMContentLoaded", function () {
+    // Gap between cards is dynamically pulled from the CSS variable '--_ui-styles---stroke--gap--slider-products' (set in Webflow variable modes/UI).
+    // Helper: get gap value from CSS variable, parsing units like px, rem etc.
+    function getGap() {
+        // We read the computed style of the slider wrapper to get the gap value dynamically.
+        const sliderWrap = document.querySelector(".home-products_slider-wrap.w-dyn-items");
+        if (!sliderWrap) return 0;
+        const style = getComputedStyle(sliderWrap);
+        let gapValue = style.getPropertyValue('--_ui-styles---stroke--gap--slider-products').trim();
+        if (!gapValue) return 0;
+        // Parse the gap value supporting px, rem, em etc.
+        // Create a temporary element to parse the value correctly
+        const tempEl = document.createElement('div');
+        tempEl.style.width = gapValue;
+        document.body.appendChild(tempEl);
+        const pixels = tempEl.offsetWidth;
+        document.body.removeChild(tempEl);
+        return pixels;
+    }
+
     // Main slider wrapper (match your CMS collection wrapper)
     const sliderWrap = document.querySelector(".home-products_slider-wrap.w-dyn-items");
     if (!sliderWrap) return;
@@ -17,6 +36,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const swipeThreshold = 10;  // Minimum px to trigger swipe
     let currentIndex = 0;       // Index of currently active card group (visible window)
     let cardWidth = 0;          // Width of a single card
+    let gap = 0;                // Gap between cards, dynamically read from CSS variable
     let isDragging = false;     // Is swipe active?
     let startX = 0;             // Start X position of swipe
     let startY = 0;             // Start Y position of swipe
@@ -24,19 +44,27 @@ document.addEventListener("DOMContentLoaded", function () {
     let currentTranslate = 0;   // Current translate during swipe
     let isArrowClick = false;   // Track if navigation was from arrow
     let visibleCardsCount = 1;  // How many cards are visible at once
+
+    // Utility: get card width (assumes all cards same width)
+    // Returns card width plus gap (except for last card in row)
+    function getCardWidth() {
+        cards = getCards(); // Update cards in case DOM changed
+        if (!cards[0]) return 0;
+        return cards[0].offsetWidth;
+    }
+
     // Helper: count how many cards fit in the viewport at once
     function getVisibleCardsCount() {
         // Assumes the parent of sliderWrap is the viewport (with overflow:hidden)
         const sliderViewport = sliderWrap.parentElement;
         if (!sliderViewport) return 1;
         const viewportWidth = sliderViewport.offsetWidth;
-        return Math.floor(viewportWidth / cardWidth) || 1;
-    }
-
-    // Utility: get card width (assumes all cards same width)
-    function getCardWidth() {
-        cards = getCards(); // Update cards in case DOM changed
-        return cards[0] ? cards[0].offsetWidth : 0;
+        // Each card occupies cardWidth plus gap except last card
+        // We calculate how many cards fit considering gap between cards
+        // visibleCardsCount * cardWidth + (visibleCardsCount - 1) * gap <= viewportWidth
+        // => visibleCardsCount <= (viewportWidth + gap) / (cardWidth + gap)
+        if (cardWidth === 0) return 1;
+        return Math.floor((viewportWidth + gap) / (cardWidth + gap)) || 1;
     }
 
     // Premium: Calculate the max slide index so that the last card is fully visible
@@ -44,11 +72,13 @@ document.addEventListener("DOMContentLoaded", function () {
     function getMaxIndex() {
         const sliderViewport = sliderWrap.parentElement;
         const viewportWidth = sliderViewport.offsetWidth;
-        const totalCardsWidth = sliderWrap.scrollWidth;
+        const totalCards = getCards().length;
+        // Total width of all cards plus gaps between them
+        const totalCardsWidth = totalCards * cardWidth + (totalCards - 1) * gap;
         const maxTranslate = totalCardsWidth - viewportWidth;
         if (maxTranslate <= 0) return 0;
-        // How many *full card* steps until last card is fully in view?
-        return Math.ceil(maxTranslate / cardWidth);
+        // How many *full card + gap* steps until last card is fully in view?
+        return Math.ceil(maxTranslate / (cardWidth + gap));
     }
 
     // Enable or disable arrows based on current position
@@ -91,8 +121,9 @@ document.addEventListener("DOMContentLoaded", function () {
         isArrowClick = false; // Reset trigger
 
         // Move slider to the correct position
-        sliderWrap.style.transform = `translateX(${-currentIndex * cardWidth}px)`;
-        prevTranslate = -currentIndex * cardWidth;
+        // Each step moves cardWidth + gap pixels
+        sliderWrap.style.transform = `translateX(${-currentIndex * (cardWidth + gap)}px)`;
+        prevTranslate = -currentIndex * (cardWidth + gap);
         updateArrows();
     }
 
@@ -121,7 +152,7 @@ document.addEventListener("DOMContentLoaded", function () {
         currentTranslate = prevTranslate + diffX;
 
         // Boundaries: no sliding past first/last visible group
-        const maxTranslate = -(getCards().length - visibleCardsCount) * cardWidth;
+        const maxTranslate = -((getCards().length - visibleCardsCount) * (cardWidth + gap));
         const minTranslate = 0;
         currentTranslate = Math.max(Math.min(currentTranslate, minTranslate), maxTranslate);
 
@@ -144,18 +175,19 @@ document.addEventListener("DOMContentLoaded", function () {
         } else {
             // Not enough movement: snap back to current card
             sliderWrap.style.transition = "transform 0.1s ease-out";
-            sliderWrap.style.transform = `translateX(${-currentIndex * cardWidth}px)`;
+            sliderWrap.style.transform = `translateX(${-currentIndex * (cardWidth + gap)}px)`;
         }
     }
 
-    // Handle window resize: re-calculate card width, visible count and adjust slider position
+    // Handle window resize: re-calculate card width, gap, visible count and adjust slider position
     function handleResize() {
         cardWidth = getCardWidth();
+        gap = getGap();
         visibleCardsCount = getVisibleCardsCount();
         // Clamp currentIndex to valid range after resize using premium maxIndex
         const maxIndex = getMaxIndex();
         currentIndex = Math.max(0, Math.min(currentIndex, maxIndex));
-        prevTranslate = -currentIndex * cardWidth;
+        prevTranslate = -currentIndex * (cardWidth + gap);
         sliderWrap.style.transform = `translateX(${prevTranslate}px)`;
         sliderWrap.style.transition = "none";
         updateArrows();
@@ -195,6 +227,7 @@ document.addEventListener("DOMContentLoaded", function () {
     // Initialize slider: set up, bind listeners, update state
     function initSlider() {
         cardWidth = getCardWidth();
+        gap = getGap();
         visibleCardsCount = getVisibleCardsCount();
         sliderWrap.style.transform = `translateX(0)`;
         sliderWrap.style.transition = "none";
