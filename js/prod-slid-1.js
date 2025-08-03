@@ -39,18 +39,22 @@ document.addEventListener("DOMContentLoaded", function () {
         return cards[0] ? cards[0].offsetWidth : 0;
     }
 
-    // Helper: calculate the max index so the last card is fully visible (premium UX)
+    // Premium: Calculate the max slide index so that the last card is fully visible
+    // This ensures the right arrow is disabled only when the last card is fully in view
     function getMaxIndex() {
-        const totalCardsWidth = cards.length * cardWidth;
-        const viewportWidth = sliderWrap.parentElement.offsetWidth;
+        const sliderViewport = sliderWrap.parentElement;
+        const viewportWidth = sliderViewport.offsetWidth;
+        const totalCardsWidth = sliderWrap.scrollWidth;
         const maxTranslate = totalCardsWidth - viewportWidth;
-        return Math.max(Math.ceil(maxTranslate / cardWidth), 0);
+        if (maxTranslate <= 0) return 0;
+        // How many *full card* steps until last card is fully in view?
+        return Math.ceil(maxTranslate / cardWidth);
     }
 
     // Enable or disable arrows based on current position
+    // Now uses premium maxIndex calculation to ensure last card is fully visible before disabling right arrow
     function updateArrows() {
         cards = getCards();
-        // Compute max index so that last visible group is fully in view (no overscroll/blank)
         const maxIndex = getMaxIndex();
         if (leftArrow) {
             if (currentIndex === 0) {
@@ -69,9 +73,9 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     // Move the slider to next/previous group (direction: 'left' = next, 'right' = previous)
+    // Uses premium maxIndex to prevent overscroll and blank spaces
     function moveSlider(direction) {
         cards = getCards();
-        // Compute max index so that last visible group is fully in view (no overscroll/blank)
         const maxIndex = getMaxIndex();
         if (direction === "left" && currentIndex < maxIndex) {
             currentIndex++;
@@ -148,7 +152,7 @@ document.addEventListener("DOMContentLoaded", function () {
     function handleResize() {
         cardWidth = getCardWidth();
         visibleCardsCount = getVisibleCardsCount();
-        // Clamp currentIndex to valid range after resize
+        // Clamp currentIndex to valid range after resize using premium maxIndex
         const maxIndex = getMaxIndex();
         currentIndex = Math.max(0, Math.min(currentIndex, maxIndex));
         prevTranslate = -currentIndex * cardWidth;
