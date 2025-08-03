@@ -23,8 +23,7 @@ document.addEventListener("DOMContentLoaded", function () {
     if (!sliderWrap) return;
 
     // Arrow navigation (Webflow Link Blocks with IDs)
-    const leftArrow = document.getElementById("p-b-s-a-left");
-    const rightArrow = document.getElementById("p-b-s-a-right");
+    // Removed hardcoded leftArrow and rightArrow selectors
 
     // Get all cards in the slider (refreshes each time for accuracy)
     function getCards() {
@@ -86,19 +85,31 @@ document.addEventListener("DOMContentLoaded", function () {
     function updateArrows() {
         cards = getCards();
         const maxIndex = getMaxIndex();
-        if (leftArrow) {
-            if (currentIndex === 0) {
-                leftArrow.classList.add("is-disabled");
-            } else {
-                leftArrow.classList.remove("is-disabled");
+        // Update all arrows with data-slider-products-arrow attribute
+        const arrows = document.querySelectorAll('[data-slider-products-arrow]');
+        arrows.forEach(arrow => {
+            if (arrow.classList.contains('is-disabled')) {
+                arrow.classList.remove('is-disabled');
             }
+        });
+
+        // Disable prev/left arrows if at start
+        if (currentIndex === 0) {
+            arrows.forEach(arrow => {
+                const dir = arrow.getAttribute('data-slider-products-arrow');
+                if (dir === 'prev' || dir === 'left') {
+                    arrow.classList.add('is-disabled');
+                }
+            });
         }
-        if (rightArrow) {
-            if (currentIndex >= maxIndex) {
-                rightArrow.classList.add("is-disabled");
-            } else {
-                rightArrow.classList.remove("is-disabled");
-            }
+        // Disable next/right arrows if at max
+        if (currentIndex >= maxIndex) {
+            arrows.forEach(arrow => {
+                const dir = arrow.getAttribute('data-slider-products-arrow');
+                if (dir === 'next' || dir === 'right') {
+                    arrow.classList.add('is-disabled');
+                }
+            });
         }
     }
 
@@ -207,20 +218,20 @@ document.addEventListener("DOMContentLoaded", function () {
         // Window
         window.addEventListener("resize", handleResize);
 
-        // Arrows (prevent default link action!)
-        if (leftArrow) leftArrow.addEventListener("click", function (event) {
-            event.preventDefault();
-            if (!leftArrow.classList.contains("is-disabled")) {
-                isArrowClick = true; // Mark arrow trigger
-                moveSlider("right");
-            }
-        });
-        if (rightArrow) rightArrow.addEventListener("click", function (event) {
-            event.preventDefault();
-            if (!rightArrow.classList.contains("is-disabled")) {
+        // Arrows are now selected via [data-slider-products-arrow], so you can add arrows anywhere and use data-slider-products-arrow='prev'/'next'.
+        const arrows = document.querySelectorAll('[data-slider-products-arrow]');
+        arrows.forEach(arrow => {
+            arrow.addEventListener('click', function(event) {
+                event.preventDefault();
+                if (arrow.classList.contains('is-disabled')) return;
+                const dir = arrow.getAttribute('data-slider-products-arrow');
                 isArrowClick = true;
-                moveSlider("left");
-            }
+                if (dir === 'prev' || dir === 'left') {
+                    moveSlider("right");
+                } else if (dir === 'next' || dir === 'right') {
+                    moveSlider("left");
+                }
+            });
         });
     }
 
