@@ -1,28 +1,43 @@
-document.querySelectorAll('[data-scramble-hover]').forEach(btn => {
-  if (btn.getAttribute('data-scramble-hover') !== 'true') return;
-  const originalText = btn.textContent;
-  let widthLocked = false;
+// Universal Scramble Text on Hover for buttons with icon (Webflow version)
+// Run after DOM is loaded
+document.addEventListener('DOMContentLoaded', function () {
+  // Select all buttons that have the scramble effect enabled
+  const scrambleButtons = document.querySelectorAll('a.button.is-icon[data-scramble-hover="true"]');
 
-  btn.addEventListener('mouseenter', () => {
-    // Lock width only once per button
-    if (!widthLocked) {
-      btn.style.width = btn.offsetWidth + "px";
-      widthLocked = true;
-    }
-    gsap.to(btn, {
-      scrambleText: {
-        text: originalText,
-        chars: "lowercase",
-        speed: 0.4
-      },
-      duration: 1,
-      ease: "power1.inOut"
+  scrambleButtons.forEach(function (btn) {
+    // Select only the text, not the icon!
+    const textDiv = btn.querySelector('.button-text');
+    if (!textDiv) return;
+
+    // Save original text and width
+    const originalText = textDiv.textContent;
+    let originalWidth = null;
+
+    btn.addEventListener('mouseenter', function () {
+      // Lock width to prevent jumps (including icon & text!)
+      if (!originalWidth) {
+        originalWidth = btn.offsetWidth;
+        btn.style.width = originalWidth + 'px';
+      }
+      // Scramble only the text (icon is untouched)
+      gsap.to(textDiv, {
+        duration: 0.5,
+        scrambleText: {
+          text: originalText,
+          chars: 'lowerCase', // or '01', or whatever suits you
+          revealDelay: 0.05
+        },
+        ease: 'power2.inOut'
+      });
     });
-  });
 
-  btn.addEventListener('mouseleave', () => {
-    btn.textContent = originalText;
-    // Uncomment below line to unlock width after hover, if needed:
-    // btn.style.width = "";
+    btn.addEventListener('mouseleave', function () {
+      // Restore original text
+      textDiv.textContent = originalText;
+      // Unlock width after a short delay so it doesn't feel glitchy
+      setTimeout(function () {
+        btn.style.width = '';
+      }, 200);
+    });
   });
 });
