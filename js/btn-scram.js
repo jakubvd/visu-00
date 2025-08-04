@@ -5,8 +5,8 @@ document.addEventListener('DOMContentLoaded', function () {
   const scrambleButtons = document.querySelectorAll('a.button.is-icon[data-scramble-hover="true"]');
 
   scrambleButtons.forEach(function (btn) {
-    // Select only the text, not the icon!
-    const textDiv = btn.querySelector('.button-text');
+    // Select the text element inside the button, supporting both .btn-text and .button-text classes
+    const textDiv = btn.querySelector('.btn-text');
     if (!textDiv) return;
 
     // Save original text and width
