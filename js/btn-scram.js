@@ -32,16 +32,16 @@ document.addEventListener('DOMContentLoaded', function () {
 
       // Animate scramble text (letters only, minimal for premium look)
       gsap.to(textDiv, {
-        duration: 1.2, // a bit longer and more premium
+        duration: 1.0, // a bit longer and more premium
         scrambleText: {
           text: originalText,
           chars: 'lowerCase',
           revealDelay: 0,    // Show text from the start, scramble only moving part
-          speed: 0.09,       // Very minimal flicker
+          speed: 0.05,       // Very minimal flicker
           rightToLeft: false, // Animate from left to right (default, can be omitted)
           tweenLength: false
         },
-        ease: 'power2.out'
+        ease: 'linear'
       });
     });
 
