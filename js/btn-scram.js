@@ -1,5 +1,5 @@
-// Universal Scramble Text on Hover for buttons with/without icon (Webflow)
-// Locks button & text width to prevent layout jumps on all types of buttons
+// Universal Scramble Text on Hover for buttons (Webflow)
+// Locks button & text width to prevent layout jumps
 
 document.addEventListener('DOMContentLoaded', function () {
   // Select all buttons that have the scramble effect enabled
@@ -25,40 +25,39 @@ document.addEventListener('DOMContentLoaded', function () {
       if (!textOriginalWidth) {
         textOriginalWidth = textDiv.offsetWidth;
         textDiv.style.width = textOriginalWidth + 'px';
-        textDiv.style.display = 'inline-block'; // Prevent line-breaks
-        textDiv.style.overflow = 'hidden'; // Hide overflow
-        textDiv.style.whiteSpace = 'nowrap'; // Prevent wrapping
+        textDiv.style.display = 'inline-block';
+        textDiv.style.overflow = 'hidden';
+        textDiv.style.whiteSpace = 'nowrap';
       }
 
-      // Animate scramble text (letters only, premium/low-flicker effect)
+      // Animate scramble text (letters only, minimal for premium look)
       gsap.to(textDiv, {
-        duration: 1.0,
+        duration: 0.8, // slower and shorter
         scrambleText: {
           text: originalText,
           chars: 'lowerCase', // Only lowercase letters
-          revealDelay: 0.22,  // Reveal more original text sooner
-          speed: 0.2,         // Slower flicker for more premium look
+          revealDelay: 0.45,  // Reveal most of the text early, so only a few chars scramble
+          speed: 0.18,        // Slower flicker
           rightToLeft: true,  // Scramble mostly end of string
-          tweenLength: false
+          tweenLength: false,
         },
-        ease: 'power2.inOut'
+        ease: 'power2.out'
       });
     });
 
     btn.addEventListener('mouseleave', function () {
       // Restore original text
       textDiv.textContent = originalText;
-      // Unlock text width and styles after a short delay
+      // Unlock text & button width after a short delay to allow transition to finish
       setTimeout(function () {
         textDiv.style.width = '';
         textDiv.style.display = '';
         textDiv.style.overflow = '';
         textDiv.style.whiteSpace = '';
         textOriginalWidth = null;
-        // Unlock button width
         btn.style.width = '';
         btnOriginalWidth = null;
-      }, 200);
+      }, 250);
     });
   });
 });
