@@ -1,9 +1,9 @@
-// Universal Scramble Text on Hover for buttons with icon (Webflow version)
-// Locks both button and text width to prevent layout jumps
+// Universal Scramble Text on Hover for buttons with/without icon (Webflow)
+// Locks button & text width to prevent layout jumps on all types of buttons
 
 document.addEventListener('DOMContentLoaded', function () {
   // Select all buttons that have the scramble effect enabled
-  const scrambleButtons = document.querySelectorAll('a.button.is-icon[data-scramble-hover="true"]');
+  const scrambleButtons = document.querySelectorAll('a.button[data-scramble-hover="true"]');
 
   scrambleButtons.forEach(function (btn) {
     // Select the text element inside the button (must have .btn-text)
@@ -30,15 +30,16 @@ document.addEventListener('DOMContentLoaded', function () {
         textDiv.style.whiteSpace = 'nowrap'; // Prevent wrapping
       }
 
-      // Animate scramble text (icon is not affected)
+      // Animate scramble text (letters only, premium/low-flicker effect)
       gsap.to(textDiv, {
         duration: 1.0,
         scrambleText: {
           text: originalText,
-          chars: 'lowerCase',
-          tweenLength: false,
-          speed: 0.4,
-          revealDelay: 0.08
+          chars: 'lowerCase', // Only lowercase letters
+          revealDelay: 0.22,  // Reveal more original text sooner
+          speed: 0.2,         // Slower flicker for more premium look
+          rightToLeft: true,  // Scramble mostly end of string
+          tweenLength: false
         },
         ease: 'power2.inOut'
       });
