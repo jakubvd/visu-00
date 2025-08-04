@@ -1,30 +1,41 @@
 // Universal Scramble Text on Hover for buttons with icon (Webflow version)
-// Run after DOM is loaded
+// Locks both button and text width to prevent layout jumps
+
 document.addEventListener('DOMContentLoaded', function () {
   // Select all buttons that have the scramble effect enabled
   const scrambleButtons = document.querySelectorAll('a.button.is-icon[data-scramble-hover="true"]');
 
   scrambleButtons.forEach(function (btn) {
-    // Select the text element inside the button, supporting both .btn-text and .button-text classes
+    // Select the text element inside the button (must have .btn-text)
     const textDiv = btn.querySelector('.btn-text');
     if (!textDiv) return;
 
-    // Save original text and width
+    // Store original values
     const originalText = textDiv.textContent;
-    let originalWidth = null;
+    let btnOriginalWidth = null;
+    let textOriginalWidth = null;
 
     btn.addEventListener('mouseenter', function () {
-      // Lock width to prevent jumps (including icon & text!)
-      if (!originalWidth) {
-        originalWidth = btn.offsetWidth;
-        btn.style.width = originalWidth + 'px';
+      // Lock the button width (outer container)
+      if (!btnOriginalWidth) {
+        btnOriginalWidth = btn.offsetWidth;
+        btn.style.width = btnOriginalWidth + 'px';
       }
-      // Scramble only the text (icon is untouched)
+      // Lock the text width (inner .btn-text)
+      if (!textOriginalWidth) {
+        textOriginalWidth = textDiv.offsetWidth;
+        textDiv.style.width = textOriginalWidth + 'px';
+        textDiv.style.display = 'inline-block'; // Prevent line-breaks
+        textDiv.style.overflow = 'hidden'; // Hide overflow
+        textDiv.style.whiteSpace = 'nowrap'; // Prevent wrapping
+      }
+
+      // Animate scramble text (icon is not affected)
       gsap.to(textDiv, {
-        duration: 0.5,
+        duration: 1.0,
         scrambleText: {
           text: originalText,
-          chars: 'lowerCase', // or '01', or whatever suits you
+          chars: 'lowerCase', // or '01', or any charset
           revealDelay: 0.05
         },
         ease: 'power2.inOut'
@@ -34,9 +45,16 @@ document.addEventListener('DOMContentLoaded', function () {
     btn.addEventListener('mouseleave', function () {
       // Restore original text
       textDiv.textContent = originalText;
-      // Unlock width after a short delay so it doesn't feel glitchy
+      // Unlock text width and styles after a short delay
       setTimeout(function () {
+        textDiv.style.width = '';
+        textDiv.style.display = '';
+        textDiv.style.overflow = '';
+        textDiv.style.whiteSpace = '';
+        textOriginalWidth = null;
+        // Unlock button width
         btn.style.width = '';
+        btnOriginalWidth = null;
       }, 200);
     });
   });
