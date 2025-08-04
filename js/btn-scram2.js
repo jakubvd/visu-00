@@ -5,16 +5,19 @@ function premiumFlicker(element, duration = 600, interval = 100) {
   let letters = original.split('');
   let time = 0;
 
-  // Block breaking to 2 lines
+  // Block breaking to 2 lines and lock width
   element.style.whiteSpace = 'nowrap';
-  // Lock width to prevent jumps
   element.style.width = element.offsetWidth + 'px';
   element.style.display = 'inline-block';
 
   const flicker = setInterval(() => {
-    // Pick 1 or 2 random indices (only real letters, not spaces)
+    // Pick 1 random index (not a space)
     let idx = Math.floor(Math.random() * letters.length);
-    while (letters[idx] === ' ') idx = Math.floor(Math.random() * letters.length);
+    let tryCount = 0;
+    while (letters[idx] === ' ' && tryCount < 10) {
+      idx = Math.floor(Math.random() * letters.length);
+      tryCount++;
+    }
 
     const origChar = letters[idx];
     letters[idx] = chars[Math.floor(Math.random() * chars.length)];
@@ -29,7 +32,6 @@ function premiumFlicker(element, duration = 600, interval = 100) {
     if (time >= duration) {
       clearInterval(flicker);
       element.textContent = original;
-      // Unlock after animation
       element.style.width = '';
       element.style.display = '';
       element.style.whiteSpace = '';
@@ -39,16 +41,25 @@ function premiumFlicker(element, duration = 600, interval = 100) {
   return flicker;
 }
 
-// On DOMContentLoaded, apply premium flicker to all relevant buttons
-document.addEventListener('DOMContentLoaded', () => {
+// Na pewno działa tylko na tym atrybucie:
+document.addEventListener('DOMContentLoaded', function() {
+  // Select all buttons with the correct data attribute
   const scramButtons = document.querySelectorAll('[data-scramble-hover="hover-scramble-effect"]');
+  if (!scramButtons.length) {
+    console.warn('No buttons found with [data-scramble-hover="hover-scramble-effect"]!');
+    return;
+  }
 
   scramButtons.forEach(button => {
+    // .btn-text inside button required
     const textSpan = button.querySelector('.btn-text');
-    if (!textSpan) return;
+    if (!textSpan) {
+      console.warn('No .btn-text element found in button:', button);
+      return;
+    }
 
     let flickerIntervalId = null;
-    textSpan.dataset.originalText = textSpan.textContent;
+    if (!textSpan.dataset.originalText) textSpan.dataset.originalText = textSpan.textContent;
 
     button.addEventListener('mouseenter', () => {
       if (flickerIntervalId !== null) return;
