@@ -38,27 +38,21 @@ function flickerSingleLetters(element, duration = 600, interval = 35) {
   return flicker;
 }
 
-// On DOMContentLoaded, apply flicker to all relevant buttons
 document.addEventListener('DOMContentLoaded', () => {
-  // Target: all buttons with data-btn-scram="true"
   const scramButtons = document.querySelectorAll('.button[data-btn-scram="true"]');
+  console.log('SCRAM BUTTONS:', scramButtons);
 
   scramButtons.forEach(button => {
-    // Find ONLY the text element (not icon)
     const textSpan = button.querySelector('.btn-text');
+    console.log('TEXT SPAN:', textSpan);
     if (!textSpan) return;
 
     let flickerIntervalId = null;
 
-    // Store original text at start
     textSpan.dataset.originalText = textSpan.textContent;
 
-    // On mouseenter: Start flicker, lock width
     button.addEventListener('mouseenter', () => {
-      // Prevent stacking intervals
       if (flickerIntervalId !== null) return;
-
-      // Lock button and text width to prevent layout jumps
       button.style.width = button.offsetWidth + 'px';
       textSpan.style.width = textSpan.offsetWidth + 'px';
       textSpan.style.display = 'inline-block';
@@ -66,13 +60,11 @@ document.addEventListener('DOMContentLoaded', () => {
       flickerIntervalId = flickerSingleLetters(textSpan, 700, 40);
     });
 
-    // On mouseleave: Stop flicker and reset text, unlock width
     button.addEventListener('mouseleave', () => {
       if (flickerIntervalId !== null) {
         clearInterval(flickerIntervalId);
         flickerIntervalId = null;
       }
-      // Restore text and unlock width
       textSpan.textContent = textSpan.dataset.originalText;
       textSpan.style.width = '';
       textSpan.style.display = '';
