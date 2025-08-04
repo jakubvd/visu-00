@@ -1,54 +1,53 @@
-// Utility: Flicker random letters without breaking button width or layout
-function flickerSingleLetters(element, duration = 600, interval = 35) {
-  const original = element.textContent;
+// Smooth, premium flicker — only some letters, always restore original text
+function premiumFlicker(element, duration = 600, interval = 100) {
+  const original = element.dataset.originalText || element.textContent;
   const chars = 'abcdefghijklmnopqrstuvwxyz';
   let letters = original.split('');
   let time = 0;
 
-  // Lock the width of the text container to prevent size jumping
+  // Block breaking to 2 lines
+  element.style.whiteSpace = 'nowrap';
+  // Lock width to prevent jumps
   element.style.width = element.offsetWidth + 'px';
-  element.style.display = 'inline-block'; // Make sure width works
+  element.style.display = 'inline-block';
 
   const flicker = setInterval(() => {
-    // Pick a random index
-    const idx = Math.floor(Math.random() * letters.length);
-    // Store original letter
+    // Pick 1 or 2 random indices (only real letters, not spaces)
+    let idx = Math.floor(Math.random() * letters.length);
+    while (letters[idx] === ' ') idx = Math.floor(Math.random() * letters.length);
+
     const origChar = letters[idx];
-    // Replace with random char
     letters[idx] = chars[Math.floor(Math.random() * chars.length)];
     element.textContent = letters.join('');
 
     setTimeout(() => {
-      // Restore the original letter after short time
       letters[idx] = origChar;
       element.textContent = letters.join('');
-    }, interval);
+    }, interval / 2);
 
     time += interval;
-    if (time > duration) {
+    if (time >= duration) {
       clearInterval(flicker);
-      element.textContent = original; // Restore original at end
-      // Unlock width after animation
+      element.textContent = original;
+      // Unlock after animation
       element.style.width = '';
       element.style.display = '';
+      element.style.whiteSpace = '';
     }
   }, interval);
 
-  // Return the interval ID so it can be cleared externally if needed
   return flicker;
 }
 
+// On DOMContentLoaded, apply premium flicker to all relevant buttons
 document.addEventListener('DOMContentLoaded', () => {
-  const scramButtons = document.querySelectorAll('.button[data-btn-scram="true"]');
-  console.log('SCRAM BUTTONS:', scramButtons);
+  const scramButtons = document.querySelectorAll('[data-scramble-hover="hover-scramble-effect"]');
 
   scramButtons.forEach(button => {
     const textSpan = button.querySelector('.btn-text');
-    console.log('TEXT SPAN:', textSpan);
     if (!textSpan) return;
 
     let flickerIntervalId = null;
-
     textSpan.dataset.originalText = textSpan.textContent;
 
     button.addEventListener('mouseenter', () => {
@@ -56,8 +55,9 @@ document.addEventListener('DOMContentLoaded', () => {
       button.style.width = button.offsetWidth + 'px';
       textSpan.style.width = textSpan.offsetWidth + 'px';
       textSpan.style.display = 'inline-block';
+      textSpan.style.whiteSpace = 'nowrap';
 
-      flickerIntervalId = flickerSingleLetters(textSpan, 700, 40);
+      flickerIntervalId = premiumFlicker(textSpan, 600, 90);
     });
 
     button.addEventListener('mouseleave', () => {
@@ -68,6 +68,7 @@ document.addEventListener('DOMContentLoaded', () => {
       textSpan.textContent = textSpan.dataset.originalText;
       textSpan.style.width = '';
       textSpan.style.display = '';
+      textSpan.style.whiteSpace = '';
       button.style.width = '';
     });
   });
