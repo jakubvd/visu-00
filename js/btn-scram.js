@@ -43,6 +43,7 @@ document.addEventListener('DOMContentLoaded', function () {
         },
         ease: 'power2.out'
       });
+    });
 
     btn.addEventListener('mouseleave', function () {
       // Restore original text
