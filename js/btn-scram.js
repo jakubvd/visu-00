@@ -38,7 +38,6 @@ document.addEventListener('DOMContentLoaded', function () {
           chars: 'lowerCase', // Only lowercase letters
           revealDelay: 0.45,  // Reveal most of the text early, so only a few chars scramble
           speed: 0.18,        // Slower flicker
-          rightToLeft: true,  // Scramble mostly end of string
           tweenLength: false,
         },
         ease: 'power2.out'
