@@ -35,8 +35,10 @@ document.addEventListener('DOMContentLoaded', function () {
         duration: 1.0,
         scrambleText: {
           text: originalText,
-          chars: 'lowerCase', // or '01', or any charset
-          revealDelay: 0.05
+          chars: 'lowerCase',
+          tweenLength: false,
+          speed: 0.4,
+          revealDelay: 0.08
         },
         ease: 'power2.inOut'
       });
