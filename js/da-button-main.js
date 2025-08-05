@@ -25,3 +25,10 @@ document.querySelectorAll('[data-padding-right]').forEach(el => {
     el.style.paddingRight = paddingValue;
   }
 });
+
+document.querySelectorAll('[data-width]').forEach(el => {
+  const widthValue = el.getAttribute('data-width'); // np. "200px" lub "10rem"
+  if (widthValue) {
+    el.style.width = widthValue;
+  }
+});
