@@ -44,7 +44,7 @@ function premiumFlicker(element, duration = 600, interval = 100) {
 // Na pewno działa tylko na tym atrybucie:
 document.addEventListener('DOMContentLoaded', function() {
   // Select all buttons with the correct data attribute
-  const scramButtons = document.querySelectorAll('[scramble-hover="true"]');
+  const scramButtons = document.querySelectorAll('[data-scramble-hover="true"]');
   if (!scramButtons.length) {
     console.warn('No buttons found with [scramble-hover="true"]!');
     return;
