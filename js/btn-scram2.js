@@ -77,7 +77,12 @@ document.addEventListener('DOMContentLoaded', function() {
         flickerIntervalId = null;
       }
       textSpan.textContent = textSpan.dataset.originalText;
-      textSpan.style.width = '';
+      const savedWidth = textSpan.getAttribute('data-width');
+      if (savedWidth) {
+        textSpan.style.width = savedWidth;
+      } else {
+        textSpan.style.width = '';
+      }
       textSpan.style.display = '';
       textSpan.style.whiteSpace = '';
       button.style.width = '';
