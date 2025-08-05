@@ -5,11 +5,6 @@ function premiumFlicker(element, duration = 600, interval = 100) {
   let letters = original.split('');
   let time = 0;
 
-  // Block breaking to 2 lines and lock width
-  element.style.whiteSpace = 'nowrap';
-  element.style.width = element.offsetWidth + 'px';
-  element.style.display = 'inline-block';
-
   const flicker = setInterval(() => {
     // Pick 1 random index (not a space)
     let idx = Math.floor(Math.random() * letters.length);
@@ -32,9 +27,6 @@ function premiumFlicker(element, duration = 600, interval = 100) {
     if (time >= duration) {
       clearInterval(flicker);
       element.textContent = original;
-      element.style.width = '';
-      element.style.display = '';
-      element.style.whiteSpace = '';
     }
   }, interval);
 
@@ -46,7 +38,7 @@ document.addEventListener('DOMContentLoaded', function() {
   // Select all buttons with the correct data attribute
   const scramButtons = document.querySelectorAll('[data-scramble-hover="true"]');
   if (!scramButtons.length) {
-    console.warn('No buttons found with [scramble-hover="true"]!');
+    console.warn('No buttons found with [data-scramble-hover="true"]!');
     return;
   }
 
@@ -61,13 +53,49 @@ document.addEventListener('DOMContentLoaded', function() {
     let flickerIntervalId = null;
     if (!textSpan.dataset.originalText) textSpan.dataset.originalText = textSpan.textContent;
 
-    button.addEventListener('mouseenter', () => {
-      if (flickerIntervalId !== null) return;
-      button.style.width = button.offsetWidth + 'px';
-      textSpan.style.width = textSpan.offsetWidth + 'px';
+    // --------
+    // ZMIANA: funkcja blokująca width na obu elementach
+    function lockWidths() {
+      // Najpierw zdejmij style aby odczytać prawidłowy width
+      button.style.width = '';
+      button.style.minWidth = '';
+      button.style.maxWidth = '';
+      textSpan.style.width = '';
+      textSpan.style.minWidth = '';
+      textSpan.style.maxWidth = '';
       textSpan.style.display = 'inline-block';
       textSpan.style.whiteSpace = 'nowrap';
 
+      // Pobierz aktualne szerokości
+      const btnWidth = button.offsetWidth;
+      const txtWidth = textSpan.offsetWidth;
+      const lockWidth = Math.max(btnWidth, txtWidth);
+
+      // Ustaw na obu
+      button.style.width = lockWidth + 'px';
+      button.style.minWidth = lockWidth + 'px';
+      button.style.maxWidth = lockWidth + 'px';
+      textSpan.style.width = lockWidth + 'px';
+      textSpan.style.minWidth = lockWidth + 'px';
+      textSpan.style.maxWidth = lockWidth + 'px';
+      textSpan.style.display = 'inline-block';
+      textSpan.style.whiteSpace = 'nowrap';
+    }
+    function unlockWidths() {
+      button.style.width = '';
+      button.style.minWidth = '';
+      button.style.maxWidth = '';
+      textSpan.style.width = '';
+      textSpan.style.minWidth = '';
+      textSpan.style.maxWidth = '';
+      textSpan.style.display = '';
+      textSpan.style.whiteSpace = '';
+    }
+    // --------
+
+    button.addEventListener('mouseenter', () => {
+      if (flickerIntervalId !== null) return;
+      lockWidths();
       flickerIntervalId = premiumFlicker(textSpan, 600, 90);
     });
 
@@ -77,10 +105,7 @@ document.addEventListener('DOMContentLoaded', function() {
         flickerIntervalId = null;
       }
       textSpan.textContent = textSpan.dataset.originalText;
-      textSpan.style.width = '';
-      textSpan.style.display = '';
-      textSpan.style.whiteSpace = '';
-      button.style.width = '';
+      unlockWidths();
     });
   });
 });
