@@ -115,6 +115,9 @@ document.addEventListener('DOMContentLoaded', function() {
       // Add 2px padding to left and right
       const paddingIncrement = 2; // in pixels
 
+      // Animate padding with 300ms ease-out transition
+      button.style.transition = 'padding-left 300ms ease-out, padding-right 300ms ease-out';
+
       // Lock widths including current width + 4px padding total (2px each side)
       button.style.width = originalButtonWidth + paddingIncrement * 2 + 'px';
       button.style.minWidth = button.style.width;
@@ -123,9 +126,6 @@ document.addEventListener('DOMContentLoaded', function() {
       textSpan.style.width = originalTextWidth + 'px';
       textSpan.style.minWidth = textSpan.style.width;
       textSpan.style.maxWidth = textSpan.style.width;
-
-      // Animate padding with 300ms ease-out transition
-      button.style.transition = 'padding-left 300ms ease-out, padding-right 300ms ease-out';
 
       // Apply new padding values (original + 2px)
       button.style.paddingLeft = (originalPaddingLeft + paddingIncrement) + 'px';
