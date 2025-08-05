@@ -54,13 +54,14 @@ document.addEventListener('DOMContentLoaded', function() {
     if (!textSpan.dataset.originalText) textSpan.dataset.originalText = textSpan.textContent;
 
     // --------
-    // UPDATED: lockWidths() now locks ONLY the button width for smooth center alignment and zero shifting.
+    // UPDATED: lockWidths() now locks button and .btn-text widths for smooth center alignment and zero shifting.
     // Steps:
-    // 1. Remove any width-related styles from button and textSpan to measure natural width.
+    // 1. Remove any width-related styles from button and textSpan to measure natural widths.
     // 2. Measure button's natural width (including padding and content).
-    // 3. Lock only button's width, minWidth, and maxWidth to this measured width in px.
-    // 4. Do NOT set any width, minWidth, or maxWidth on textSpan.
-    // 5. Ensure textSpan keeps display: inline-block and white-space: nowrap for smooth animation (set only if necessary).
+    // 3. Measure textSpan's natural width.
+    // 4. Lock button's width, minWidth, and maxWidth to its measured width in px.
+    // 5. Lock textSpan's width, minWidth, and maxWidth to its measured width in px.
+    // 6. Ensure textSpan keeps display: inline-block and white-space: nowrap for smooth animation (set only if necessary).
     function lockWidths() {
       // Remove width-related styles to get natural widths
       button.style.width = '';
@@ -71,7 +72,6 @@ document.addEventListener('DOMContentLoaded', function() {
       textSpan.style.maxWidth = '';
 
       // Ensure textSpan has inline-block and nowrap for smooth flicker animation
-      // Only set if not already set to avoid unnecessary style changes
       if (textSpan.style.display !== 'inline-block') {
         textSpan.style.display = 'inline-block';
       }
@@ -79,34 +79,38 @@ document.addEventListener('DOMContentLoaded', function() {
         textSpan.style.whiteSpace = 'nowrap';
       }
 
-      // Measure button's natural width (includes padding and content)
+      // Measure button and textSpan natural widths
       const btnWidth = button.offsetWidth;
+      const textWidth = textSpan.offsetWidth;
 
       // Lock button width only
       button.style.width = btnWidth + 'px';
       button.style.minWidth = btnWidth + 'px';
       button.style.maxWidth = btnWidth + 'px';
 
-      // Do NOT set any width properties on textSpan to allow smooth center alignment and zero shifting
+      // Lock textSpan width to prevent micro-shifting (especially with icon)
+      textSpan.style.width = textWidth + 'px';
+      textSpan.style.minWidth = textWidth + 'px';
+      textSpan.style.maxWidth = textWidth + 'px';
     }
 
-    // UPDATED: unlockWidths() removes only width-related styles from button,
+    // UPDATED: unlockWidths() removes width-related styles from button and textSpan,
     // and restores textSpan's display and whiteSpace to default (removes if set by script).
     function unlockWidths() {
-      // Remove width locks from button
       button.style.width = '';
       button.style.minWidth = '';
       button.style.maxWidth = '';
 
-      // Remove display and whiteSpace styles from textSpan if they were set by this script
+      textSpan.style.width = '';
+      textSpan.style.minWidth = '';
+      textSpan.style.maxWidth = '';
+
       if (textSpan.style.display === 'inline-block') {
         textSpan.style.display = '';
       }
       if (textSpan.style.whiteSpace === 'nowrap') {
         textSpan.style.whiteSpace = '';
       }
-
-      // Do NOT touch any width-related styles on textSpan because we did not set them
     }
     // --------
 
