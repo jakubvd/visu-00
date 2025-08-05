@@ -1,12 +1,14 @@
-// Smooth, premium flicker — only some letters, always restore original text - working
+// Smooth, premium flicker effect for some letters in a button text, always restoring the original text.
+// This effect repeatedly scrambles random letters and then restores them quickly, creating a flicker effect.
 function premiumFlicker(element, duration = 600, interval = 100) {
+  // Store the original text from a data attribute or current text content
   const original = element.dataset.originalText || element.textContent;
   const chars = 'abcdefghijklmnopqrstuvwxyz';
   let letters = original.split('');
   let time = 0;
 
   const flicker = setInterval(() => {
-    // Pick 1 random index (not a space)
+    // Pick one random index that is not a space to replace temporarily with a random char
     let idx = Math.floor(Math.random() * letters.length);
     let tryCount = 0;
     while (letters[idx] === ' ' && tryCount < 10) {
@@ -18,6 +20,7 @@ function premiumFlicker(element, duration = 600, interval = 100) {
     letters[idx] = chars[Math.floor(Math.random() * chars.length)];
     element.textContent = letters.join('');
 
+    // Restore original char after half the interval
     setTimeout(() => {
       letters[idx] = origChar;
       element.textContent = letters.join('');
@@ -33,9 +36,13 @@ function premiumFlicker(element, duration = 600, interval = 100) {
   return flicker;
 }
 
-// set correct data attribute for hover effect
+// Convert rem to pixels dynamically based on the root font size
+function remToPx(rem) {
+  return rem * parseFloat(getComputedStyle(document.documentElement).fontSize);
+}
+
 document.addEventListener('DOMContentLoaded', function() {
-  // Select all buttons with the correct data attribute
+  // Select all buttons with the attribute data-scramble-hover="true"
   const scramButtons = document.querySelectorAll('[data-scramble-hover="true"]');
   if (!scramButtons.length) {
     console.warn('No buttons found with [data-scramble-hover="true"]!');
@@ -43,7 +50,7 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   scramButtons.forEach(button => {
-    // .btn-text inside button required
+    // The span containing the button text, required for the flicker effect
     const textSpan = button.querySelector('.btn-text');
     if (!textSpan) {
       console.warn('No .btn-text element found in button:', button);
@@ -51,19 +58,12 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     let flickerIntervalId = null;
+
+    // Store original text in a data attribute if not already set
     if (!textSpan.dataset.originalText) textSpan.dataset.originalText = textSpan.textContent;
 
-    // --------
-    // UPDATED: lockWidths() now locks button and .btn-text widths for smooth center alignment and zero shifting.
-    // Steps:
-    // 1. Remove any width-related styles from button and textSpan to measure natural widths.
-    // 2. Measure button's natural width (including padding and content).
-    // 3. Measure textSpan's natural width.
-    // 4. Lock button's width, minWidth, and maxWidth to its measured width in px.
-    // 5. Lock textSpan's width, minWidth, and maxWidth to its measured width in px.
-    // 6. Ensure textSpan keeps display: inline-block and white-space: nowrap for smooth animation (set only if necessary).
+    // Lock widths function locks button and textSpan widths to prevent layout shifting during flicker
     function lockWidths() {
-      // Remove width-related styles to get natural widths
       button.style.width = '';
       button.style.minWidth = '';
       button.style.maxWidth = '';
@@ -71,7 +71,6 @@ document.addEventListener('DOMContentLoaded', function() {
       textSpan.style.minWidth = '';
       textSpan.style.maxWidth = '';
 
-      // Ensure textSpan has inline-block and nowrap for smooth flicker animation
       if (textSpan.style.display !== 'inline-block') {
         textSpan.style.display = 'inline-block';
       }
@@ -79,23 +78,19 @@ document.addEventListener('DOMContentLoaded', function() {
         textSpan.style.whiteSpace = 'nowrap';
       }
 
-      // Measure button and textSpan natural widths
       const btnWidth = button.offsetWidth;
       const textWidth = textSpan.offsetWidth;
 
-      // Lock button width only
       button.style.width = btnWidth + 'px';
       button.style.minWidth = btnWidth + 'px';
       button.style.maxWidth = btnWidth + 'px';
 
-      // Lock textSpan width to prevent micro-shifting (especially with icon)
       textSpan.style.width = textWidth + 'px';
       textSpan.style.minWidth = textWidth + 'px';
       textSpan.style.maxWidth = textWidth + 'px';
     }
 
-    // UPDATED: unlockWidths() removes width-related styles from button and textSpan,
-    // and restores textSpan's display and whiteSpace to default (removes if set by script).
+    // Unlock widths function resets the widths and display properties
     function unlockWidths() {
       button.style.width = '';
       button.style.minWidth = '';
@@ -112,14 +107,41 @@ document.addEventListener('DOMContentLoaded', function() {
         textSpan.style.whiteSpace = '';
       }
     }
-    // --------
 
+    // Function to add 0.125rem padding to left and right dynamically on hover with smooth transition
+    function addHoverPadding() {
+      const paddingIncrement = remToPx(0.125); // convert 0.125rem to px
+
+      // Get computed style padding-left and padding-right to calculate new padding values
+      const computedStyle = getComputedStyle(button);
+      const currentPaddingLeft = parseFloat(computedStyle.paddingLeft);
+      const currentPaddingRight = parseFloat(computedStyle.paddingRight);
+
+      // Set position relative to prevent layout shift
+      button.style.position = 'relative';
+      button.style.transition = 'padding-left 0.3s ease, padding-right 0.3s ease';
+
+      // Increase padding left and right by 0.125rem (in px)
+      button.style.paddingLeft = (currentPaddingLeft + paddingIncrement) + 'px';
+      button.style.paddingRight = (currentPaddingRight + paddingIncrement) + 'px';
+    }
+
+    // Function to reset padding to original values on mouse leave
+    function resetPadding() {
+      button.style.transition = 'padding-left 0.3s ease, padding-right 0.3s ease';
+      button.style.paddingLeft = '';
+      button.style.paddingRight = '';
+    }
+
+    // Mouse enter event: lock widths, start flicker, add extra padding
     button.addEventListener('mouseenter', () => {
       if (flickerIntervalId !== null) return;
       lockWidths();
       flickerIntervalId = premiumFlicker(textSpan, 600, 90);
+      addHoverPadding();
     });
 
+    // Mouse leave event: clear flicker, restore original text, unlock widths, reset padding
     button.addEventListener('mouseleave', () => {
       if (flickerIntervalId !== null) {
         clearInterval(flickerIntervalId);
@@ -127,6 +149,7 @@ document.addEventListener('DOMContentLoaded', function() {
       }
       textSpan.textContent = textSpan.dataset.originalText;
       unlockWidths();
+      resetPadding();
     });
   });
 });
