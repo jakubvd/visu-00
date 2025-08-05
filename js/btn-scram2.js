@@ -62,47 +62,95 @@ document.addEventListener('DOMContentLoaded', function() {
     // Store original text in a data attribute if not already set
     if (!textSpan.dataset.originalText) textSpan.dataset.originalText = textSpan.textContent;
 
+    // Store original widths and paddings to restore on mouse leave
+    let originalButtonWidth = null;
+    let originalTextWidth = null;
+    let originalPaddingLeft = null;
+    let originalPaddingRight = null;
+
     // Set position relative on button to avoid layout shift when padding changes
     button.style.position = 'relative';
 
-    // Function to add 0.125rem padding to left and right dynamically on hover with smooth transition
-    function addHoverPadding() {
-      const paddingIncrement = remToPx(0.125); // convert 0.125rem to px
+    // Function to lock widths of button and textSpan and add 2px padding on each side to button
+    function lockWidthsAndAddPadding() {
+      // Reset any previous inline styles to get accurate natural widths
+      button.style.width = '';
+      button.style.minWidth = '';
+      button.style.maxWidth = '';
+      textSpan.style.width = '';
+      textSpan.style.minWidth = '';
+      textSpan.style.maxWidth = '';
 
-      // Get computed style padding-left and padding-right to calculate new padding values
+      // Ensure textSpan display and white-space to get correct width
+      if (textSpan.style.display !== 'inline-block') textSpan.style.display = 'inline-block';
+      if (textSpan.style.whiteSpace !== 'nowrap') textSpan.style.whiteSpace = 'nowrap';
+
+      // Get natural widths
+      originalButtonWidth = button.offsetWidth;
+      originalTextWidth = textSpan.offsetWidth;
+
+      // Get computed paddings
       const computedStyle = getComputedStyle(button);
-      const currentPaddingLeft = parseFloat(computedStyle.paddingLeft);
-      const currentPaddingRight = parseFloat(computedStyle.paddingRight);
+      originalPaddingLeft = parseFloat(computedStyle.paddingLeft);
+      originalPaddingRight = parseFloat(computedStyle.paddingRight);
 
-      button.style.transition = 'padding-left 0.3s ease, padding-right 0.3s ease';
+      // Add 2px padding to left and right
+      const paddingIncrement = 2; // in pixels
 
-      // Increase padding left and right by 0.125rem (in px)
-      button.style.paddingLeft = (currentPaddingLeft + paddingIncrement) + 'px';
-      button.style.paddingRight = (currentPaddingRight + paddingIncrement) + 'px';
+      // Lock widths including current width + 4px padding total (2px each side)
+      button.style.width = originalButtonWidth + paddingIncrement * 2 + 'px';
+      button.style.minWidth = button.style.width;
+      button.style.maxWidth = button.style.width;
+
+      textSpan.style.width = originalTextWidth + 'px';
+      textSpan.style.minWidth = textSpan.style.width;
+      textSpan.style.maxWidth = textSpan.style.width;
+
+      // Animate padding with 500ms ease-in transition
+      button.style.transition = 'padding-left 500ms ease-in, padding-right 500ms ease-in';
+
+      // Apply new padding values (original + 2px)
+      button.style.paddingLeft = (originalPaddingLeft + paddingIncrement) + 'px';
+      button.style.paddingRight = (originalPaddingRight + paddingIncrement) + 'px';
     }
 
-    // Function to reset padding to original values on mouse leave
-    function resetPadding() {
-      button.style.transition = 'padding-left 0.3s ease, padding-right 0.3s ease';
+    // Function to unlock widths and reset paddings and transitions
+    function unlockWidthsAndResetPadding() {
+      button.style.transition = 'padding-left 500ms ease-in, padding-right 500ms ease-in';
+
+      // Reset widths to default (remove inline styles)
+      button.style.width = '';
+      button.style.minWidth = '';
+      button.style.maxWidth = '';
+
+      textSpan.style.width = '';
+      textSpan.style.minWidth = '';
+      textSpan.style.maxWidth = '';
+
+      // Reset padding to original (remove inline styles)
       button.style.paddingLeft = '';
       button.style.paddingRight = '';
+
+      // Reset display and white-space for textSpan
+      if (textSpan.style.display === 'inline-block') textSpan.style.display = '';
+      if (textSpan.style.whiteSpace === 'nowrap') textSpan.style.whiteSpace = '';
     }
 
-    // Mouse enter event: start flicker, add extra padding
+    // Mouse enter event: lock widths, start flicker, add padding
     button.addEventListener('mouseenter', () => {
       if (flickerIntervalId !== null) return;
+      lockWidthsAndAddPadding();
       flickerIntervalId = premiumFlicker(textSpan, 600, 90);
-      addHoverPadding();
     });
 
-    // Mouse leave event: clear flicker, restore original text, reset padding
+    // Mouse leave event: clear flicker, restore original text, unlock widths, reset padding
     button.addEventListener('mouseleave', () => {
       if (flickerIntervalId !== null) {
         clearInterval(flickerIntervalId);
         flickerIntervalId = null;
       }
       textSpan.textContent = textSpan.dataset.originalText;
-      resetPadding();
+      unlockWidthsAndResetPadding();
     });
   });
 });
