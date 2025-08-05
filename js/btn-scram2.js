@@ -57,9 +57,9 @@ document.addEventListener('DOMContentLoaded', function() {
     // ZMIANA: funkcja blokująca width na obu elementach
     function lockWidths() {
       // Najpierw zdejmij style aby odczytać prawidłowy width
-      button.style.width = '';
-      button.style.minWidth = '';
-      button.style.maxWidth = '';
+      button.style.width = lockWidth + 'px';
+      button.style.minWidth = lockWidth + 'px';
+      button.style.maxWidth = lockWidth + 'px';
       textSpan.style.width = '';
       textSpan.style.minWidth = '';
       textSpan.style.maxWidth = '';
