@@ -41,7 +41,7 @@ function premiumFlicker(element, duration = 600, interval = 100) {
   return flicker;
 }
 
-// Na pewno działa tylko na tym atrybucie:
+// set correct data attribute for hover effect
 document.addEventListener('DOMContentLoaded', function() {
   // Select all buttons with the correct data attribute
   const scramButtons = document.querySelectorAll('[data-scramble-hover="true"]');
