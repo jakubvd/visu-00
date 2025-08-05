@@ -49,6 +49,27 @@ document.addEventListener('DOMContentLoaded', function() {
     return;
   }
 
+  // Permanently lock the width of each .btn-text on page load to prevent flickering/shaking of icons.
+  // This sets display to inline-block, white-space to nowrap, and fixes width, min-width, and max-width
+  // to the current offsetWidth in pixels, ensuring stable layout before any hover effects.
+  scramButtons.forEach(button => {
+    const textSpan = button.querySelector('.btn-text');
+    if (!textSpan) {
+      console.warn('No .btn-text element found in button:', button);
+      return;
+    }
+    // Store original text in a data attribute if not already set
+    if (!textSpan.dataset.originalText) textSpan.dataset.originalText = textSpan.textContent;
+
+    // Lock width permanently
+    if (textSpan.style.display !== 'inline-block') textSpan.style.display = 'inline-block';
+    if (textSpan.style.whiteSpace !== 'nowrap') textSpan.style.whiteSpace = 'nowrap';
+    const width = textSpan.offsetWidth;
+    textSpan.style.width = width + 'px';
+    textSpan.style.minWidth = width + 'px';
+    textSpan.style.maxWidth = width + 'px';
+  });
+
   scramButtons.forEach(button => {
     // The span containing the button text, required for the flicker effect
     const textSpan = button.querySelector('.btn-text');
@@ -58,9 +79,6 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     let flickerIntervalId = null;
-
-    // Store original text in a data attribute if not already set
-    if (!textSpan.dataset.originalText) textSpan.dataset.originalText = textSpan.textContent;
 
     // Store original widths and paddings to restore on mouse leave
     let originalButtonWidth = null;
@@ -106,8 +124,8 @@ document.addEventListener('DOMContentLoaded', function() {
       textSpan.style.minWidth = textSpan.style.width;
       textSpan.style.maxWidth = textSpan.style.width;
 
-      // Animate padding with 500ms ease-in transition
-      button.style.transition = 'padding-left 500ms ease-in, padding-right 500ms ease-in';
+      // Animate padding with 300ms ease-out transition
+      button.style.transition = 'padding-left 300ms ease-out, padding-right 300ms ease-out';
 
       // Apply new padding values (original + 2px)
       button.style.paddingLeft = (originalPaddingLeft + paddingIncrement) + 'px';
@@ -116,7 +134,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Function to unlock widths and reset paddings and transitions
     function unlockWidthsAndResetPadding() {
-      button.style.transition = 'padding-left 500ms ease-in, padding-right 500ms ease-in';
+      button.style.transition = 'padding-left 300ms ease-out, padding-right 300ms ease-out';
 
       // Reset widths to default (remove inline styles)
       button.style.width = '';
