@@ -1,14 +1,17 @@
-// Smooth, premium flicker effect for some letters in a button text, always restoring the original text.
-// This effect repeatedly scrambles random letters and then restores them quickly, creating a flicker effect.
+// Smooth, premium flicker — only some letters, always restore original text
 function premiumFlicker(element, duration = 600, interval = 100) {
-  // Store the original text from a data attribute or current text content
   const original = element.dataset.originalText || element.textContent;
   const chars = 'abcdefghijklmnopqrstuvwxyz';
   let letters = original.split('');
   let time = 0;
 
+  // Block breaking to 2 lines and lock width
+  element.style.whiteSpace = 'nowrap';
+  element.style.width = element.offsetWidth + 'px';
+  element.style.display = 'inline-block';
+
   const flicker = setInterval(() => {
-    // Pick one random index that is not a space to replace temporarily with a random char
+    // Pick 1 random index (not a space)
     let idx = Math.floor(Math.random() * letters.length);
     let tryCount = 0;
     while (letters[idx] === ' ' && tryCount < 10) {
@@ -20,7 +23,6 @@ function premiumFlicker(element, duration = 600, interval = 100) {
     letters[idx] = chars[Math.floor(Math.random() * chars.length)];
     element.textContent = letters.join('');
 
-    // Restore original char after half the interval
     setTimeout(() => {
       letters[idx] = origChar;
       element.textContent = letters.join('');
@@ -30,48 +32,26 @@ function premiumFlicker(element, duration = 600, interval = 100) {
     if (time >= duration) {
       clearInterval(flicker);
       element.textContent = original;
+      element.style.width = '';
+      element.style.display = '';
+      element.style.whiteSpace = '';
     }
   }, interval);
 
   return flicker;
 }
 
-// Convert rem to pixels dynamically based on the root font size
-function remToPx(rem) {
-  return rem * parseFloat(getComputedStyle(document.documentElement).fontSize);
-}
-
+// set correct data attribute for hover effect
 document.addEventListener('DOMContentLoaded', function() {
-  // Select all buttons with the attribute data-scramble-hover="true"
+  // Select all buttons with the correct data attribute
   const scramButtons = document.querySelectorAll('[data-scramble-hover="true"]');
   if (!scramButtons.length) {
-    console.warn('No buttons found with [data-scramble-hover="true"]!');
+    console.warn('No buttons found with [scramble-hover="true"]!');
     return;
   }
 
-  // Permanently lock the width of each .btn-text on page load to prevent flickering/shaking of icons.
-  // This sets display to inline-block, white-space to nowrap, and fixes width, min-width, and max-width
-  // to the current offsetWidth in pixels, ensuring stable layout before any hover effects.
   scramButtons.forEach(button => {
-    const textSpan = button.querySelector('.btn-text');
-    if (!textSpan) {
-      console.warn('No .btn-text element found in button:', button);
-      return;
-    }
-    // Store original text in a data attribute if not already set
-    if (!textSpan.dataset.originalText) textSpan.dataset.originalText = textSpan.textContent;
-
-    // Lock width permanently
-    if (textSpan.style.display !== 'inline-block') textSpan.style.display = 'inline-block';
-    if (textSpan.style.whiteSpace !== 'nowrap') textSpan.style.whiteSpace = 'nowrap';
-    const width = textSpan.offsetWidth;
-    textSpan.style.width = width + 'px';
-    textSpan.style.minWidth = width + 'px';
-    textSpan.style.maxWidth = width + 'px';
-  });
-
-  scramButtons.forEach(button => {
-    // The span containing the button text, required for the flicker effect
+    // .btn-text inside button required
     const textSpan = button.querySelector('.btn-text');
     if (!textSpan) {
       console.warn('No .btn-text element found in button:', button);
@@ -79,96 +59,28 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     let flickerIntervalId = null;
+    if (!textSpan.dataset.originalText) textSpan.dataset.originalText = textSpan.textContent;
 
-    // Store original widths and paddings to restore on mouse leave
-    let originalButtonWidth = null;
-    let originalTextWidth = null;
-    let originalPaddingLeft = null;
-    let originalPaddingRight = null;
-
-    // Set position relative on button to avoid layout shift when padding changes
-    button.style.position = 'relative';
-
-    // Function to lock widths of button and textSpan and add 2px padding on each side to button
-    function lockWidthsAndAddPadding() {
-      // Reset any previous inline styles to get accurate natural widths
-      button.style.width = '';
-      button.style.minWidth = '';
-      button.style.maxWidth = '';
-      textSpan.style.width = '';
-      textSpan.style.minWidth = '';
-      textSpan.style.maxWidth = '';
-
-      // Ensure textSpan display and white-space to get correct width
-      if (textSpan.style.display !== 'inline-block') textSpan.style.display = 'inline-block';
-      if (textSpan.style.whiteSpace !== 'nowrap') textSpan.style.whiteSpace = 'nowrap';
-
-      // Get natural widths
-      originalButtonWidth = button.offsetWidth;
-      originalTextWidth = textSpan.offsetWidth;
-
-      // Get computed paddings
-      const computedStyle = getComputedStyle(button);
-      originalPaddingLeft = parseFloat(computedStyle.paddingLeft);
-      originalPaddingRight = parseFloat(computedStyle.paddingRight);
-
-      // Add 2px padding to left and right
-      const paddingIncrement = 2; // in pixels
-
-      // Animate padding with 300ms ease-out transition
-      button.style.transition = 'padding-left 300ms ease-out, padding-right 300ms ease-out';
-
-      // Lock widths including current width + 4px padding total (2px each side)
-      button.style.width = originalButtonWidth + paddingIncrement * 2 + 'px';
-      button.style.minWidth = button.style.width;
-      button.style.maxWidth = button.style.width;
-
-      textSpan.style.width = originalTextWidth + 'px';
-      textSpan.style.minWidth = textSpan.style.width;
-      textSpan.style.maxWidth = textSpan.style.width;
-
-      // Apply new padding values (original + 2px)
-      button.style.paddingLeft = (originalPaddingLeft + paddingIncrement) + 'px';
-      button.style.paddingRight = (originalPaddingRight + paddingIncrement) + 'px';
-    }
-
-    // Function to unlock widths and reset paddings and transitions
-    function unlockWidthsAndResetPadding() {
-      button.style.transition = 'padding-left 300ms ease-out, padding-right 300ms ease-out';
-
-      // Reset widths to default (remove inline styles)
-      button.style.width = '';
-      button.style.minWidth = '';
-      button.style.maxWidth = '';
-
-      textSpan.style.width = '';
-      textSpan.style.minWidth = '';
-      textSpan.style.maxWidth = '';
-
-      // Reset padding to original (remove inline styles)
-      button.style.paddingLeft = '';
-      button.style.paddingRight = '';
-
-      // Reset display and white-space for textSpan
-      if (textSpan.style.display === 'inline-block') textSpan.style.display = '';
-      if (textSpan.style.whiteSpace === 'nowrap') textSpan.style.whiteSpace = '';
-    }
-
-    // Mouse enter event: lock widths, start flicker, add padding
     button.addEventListener('mouseenter', () => {
       if (flickerIntervalId !== null) return;
-      lockWidthsAndAddPadding();
+      button.style.width = button.offsetWidth + 'px';
+      textSpan.style.width = textSpan.offsetWidth + 'px';
+      textSpan.style.display = 'inline-block';
+      textSpan.style.whiteSpace = 'nowrap';
+
       flickerIntervalId = premiumFlicker(textSpan, 600, 90);
     });
 
-    // Mouse leave event: clear flicker, restore original text, unlock widths, reset padding
     button.addEventListener('mouseleave', () => {
       if (flickerIntervalId !== null) {
         clearInterval(flickerIntervalId);
         flickerIntervalId = null;
       }
       textSpan.textContent = textSpan.dataset.originalText;
-      unlockWidthsAndResetPadding();
+      textSpan.style.width = '';
+      textSpan.style.display = '';
+      textSpan.style.whiteSpace = '';
+      button.style.width = '';
     });
   });
 });
