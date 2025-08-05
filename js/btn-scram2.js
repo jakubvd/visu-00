@@ -62,51 +62,8 @@ document.addEventListener('DOMContentLoaded', function() {
     // Store original text in a data attribute if not already set
     if (!textSpan.dataset.originalText) textSpan.dataset.originalText = textSpan.textContent;
 
-    // Lock widths function locks button and textSpan widths to prevent layout shifting during flicker
-    function lockWidths() {
-      button.style.width = '';
-      button.style.minWidth = '';
-      button.style.maxWidth = '';
-      textSpan.style.width = '';
-      textSpan.style.minWidth = '';
-      textSpan.style.maxWidth = '';
-
-      if (textSpan.style.display !== 'inline-block') {
-        textSpan.style.display = 'inline-block';
-      }
-      if (textSpan.style.whiteSpace !== 'nowrap') {
-        textSpan.style.whiteSpace = 'nowrap';
-      }
-
-      const btnWidth = button.offsetWidth;
-      const textWidth = textSpan.offsetWidth;
-
-      button.style.width = btnWidth + 'px';
-      button.style.minWidth = btnWidth + 'px';
-      button.style.maxWidth = btnWidth + 'px';
-
-      textSpan.style.width = textWidth + 'px';
-      textSpan.style.minWidth = textWidth + 'px';
-      textSpan.style.maxWidth = textWidth + 'px';
-    }
-
-    // Unlock widths function resets the widths and display properties
-    function unlockWidths() {
-      button.style.width = '';
-      button.style.minWidth = '';
-      button.style.maxWidth = '';
-
-      textSpan.style.width = '';
-      textSpan.style.minWidth = '';
-      textSpan.style.maxWidth = '';
-
-      if (textSpan.style.display === 'inline-block') {
-        textSpan.style.display = '';
-      }
-      if (textSpan.style.whiteSpace === 'nowrap') {
-        textSpan.style.whiteSpace = '';
-      }
-    }
+    // Set position relative on button to avoid layout shift when padding changes
+    button.style.position = 'relative';
 
     // Function to add 0.125rem padding to left and right dynamically on hover with smooth transition
     function addHoverPadding() {
@@ -117,8 +74,6 @@ document.addEventListener('DOMContentLoaded', function() {
       const currentPaddingLeft = parseFloat(computedStyle.paddingLeft);
       const currentPaddingRight = parseFloat(computedStyle.paddingRight);
 
-      // Set position relative to prevent layout shift
-      button.style.position = 'relative';
       button.style.transition = 'padding-left 0.3s ease, padding-right 0.3s ease';
 
       // Increase padding left and right by 0.125rem (in px)
@@ -133,22 +88,20 @@ document.addEventListener('DOMContentLoaded', function() {
       button.style.paddingRight = '';
     }
 
-    // Mouse enter event: lock widths, start flicker, add extra padding
+    // Mouse enter event: start flicker, add extra padding
     button.addEventListener('mouseenter', () => {
       if (flickerIntervalId !== null) return;
-      lockWidths();
       flickerIntervalId = premiumFlicker(textSpan, 600, 90);
       addHoverPadding();
     });
 
-    // Mouse leave event: clear flicker, restore original text, unlock widths, reset padding
+    // Mouse leave event: clear flicker, restore original text, reset padding
     button.addEventListener('mouseleave', () => {
       if (flickerIntervalId !== null) {
         clearInterval(flickerIntervalId);
         flickerIntervalId = null;
       }
       textSpan.textContent = textSpan.dataset.originalText;
-      unlockWidths();
       resetPadding();
     });
   });
