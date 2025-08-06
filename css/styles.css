@@ -1,0 +1,80 @@
+/* ===================== Global Styles ===================== */
+
+/* Improve font rendering quality */
+* {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  -o-font-smoothing: antialiased;
+}
+
+/* ===================== General UI States / CMS Items list categories reveals ===================== */
+
+/* Fade-out effect for elements */
+.fade-out {
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+/* Fade-in effect for elements */
+.fade-in {
+  opacity: 1;
+  transition: opacity 0.15s ease;
+}
+
+/* Disabled state for UI elements */
+.is-disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* ===================== Pagination Button / Read More Button ===================== */
+
+/* Transition for Read More button */
+.w-pagination-next.button.is-read-more {
+  transition: background-color 0.4s cubic-bezier(.445, .05, .55, .95) !important;
+}
+
+/* Hover effect for Read More button */
+.w-pagination-next.button.is-read-more:hover {
+  background-color: var(--bg-color--button-hover-dark) !important;
+}
+
+/* ===================== Universal Underline Hover Effect ===================== */
+
+/* Universal animated underline (left-to-right in/out) */
+[data-underline-hover="true"] {
+  position: relative;
+  display: inline-block;
+  cursor: pointer;
+  overflow: hidden;
+}
+
+/* Underline element, hidden by default */
+[data-underline-hover="true"]::after {
+  content: "";
+  display: block;
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: 0.5px;               /* Underline thickness: premium thin */
+  background: currentColor;    /* Matches text color */
+  transform: scaleX(0);        /* Line is hidden by default */
+  transform-origin: left;      /* Always animate from the left edge */
+  transition: transform 0.5s cubic-bezier(.45,.05,.55,.95);
+  z-index: 1;
+}
+
+/* On hover, underline expands left-to-right */
+[data-underline-hover="true"]:hover::after,
+[data-underline-hover="true"].active::after {
+  transform: scaleX(1);
+  transform-origin: left;      /* Ensure it grows from left */
+}
+
+/* On hover off, line collapses left-to-right */
+[data-underline-hover="true"]:not(:hover):not(.active)::after {
+  transform: scaleX(0);
+  transform-origin: left;      /* Ensure it shrinks from left */
+}
