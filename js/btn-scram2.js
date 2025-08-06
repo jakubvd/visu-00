@@ -29,7 +29,7 @@ function premiumFlicker(element, duration = 800, interval = 150) {
     setTimeout(() => {
       letters[idx] = origChar;
       element.textContent = letters.join('');
-    }, interval / 2);
+    }, interval / 1.5);
 
     time += interval;
     if (time >= duration) {
@@ -71,7 +71,7 @@ document.addEventListener('DOMContentLoaded', function() {
       textSpan.style.display = 'inline-block';
       textSpan.style.whiteSpace = 'nowrap';
 
-      flickerIntervalId = premiumFlicker(textSpan, 800, 150); // 800ms total, 150ms interval
+      flickerIntervalId = premiumFlicker(textSpan, 1600, 300); // 1600ms total, 300ms interval
     });
 
     button.addEventListener('mouseleave', () => {
