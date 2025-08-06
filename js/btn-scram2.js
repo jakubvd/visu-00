@@ -1,10 +1,27 @@
 // Smooth, premium flicker — only some letters, always restore original text
-function premiumFlicker(element, duration = 600, interval = 150) {
+function premiumFlicker(element, duration = 480, interval = 120) {
   const original = element.dataset.originalText || element.textContent;
   const chars = 'abcdefghijklmnopqrstuvwxyz';
   let letters = original.split('');
   let time = 0;
   let tickCount = 0;
+
+  // Build array of eligible indexes (lowercase letters, not spaces)
+  const eligibleIndexes = [];
+  for (let i = 0; i < letters.length; i++) {
+    if (letters[i] !== ' ' && letters[i] === letters[i].toLowerCase()) {
+      eligibleIndexes.push(i);
+    }
+  }
+
+  // Randomly select ~50% of eligible indexes for scrambling
+  const scrambleCount = Math.ceil(eligibleIndexes.length / 2);
+  const scrambleIndexes = [];
+  const copyEligible = eligibleIndexes.slice();
+  while (scrambleIndexes.length < scrambleCount && copyEligible.length > 0) {
+    const randIdx = Math.floor(Math.random() * copyEligible.length);
+    scrambleIndexes.push(copyEligible.splice(randIdx, 1)[0]);
+  }
 
   // Block breaking to 2 lines and lock width
   element.style.whiteSpace = 'nowrap';
@@ -20,16 +37,9 @@ function premiumFlicker(element, duration = 600, interval = 150) {
       if (Math.random() > 0.7) return; // Later, 30% skip as usual
     }
 
-    // Pick 1 random index (only lowercase letters)
-    let idx = Math.floor(Math.random() * letters.length);
-    let tryCount = 0;
-    while (
-      (letters[idx] === ' ' || letters[idx] !== letters[idx].toLowerCase()) &&
-      tryCount < 20
-    ) {
-      idx = Math.floor(Math.random() * letters.length);
-      tryCount++;
-    }
+    // Pick 1 random index from scrambleIndexes
+    if (scrambleIndexes.length === 0) return;
+    let idx = scrambleIndexes[Math.floor(Math.random() * scrambleIndexes.length)];
 
     const origChar = letters[idx];
     letters[idx] = chars[Math.floor(Math.random() * chars.length)];
@@ -80,7 +90,7 @@ document.addEventListener('DOMContentLoaded', function() {
       textSpan.style.display = 'inline-block';
       textSpan.style.whiteSpace = 'nowrap';
 
-      flickerIntervalId = premiumFlicker(textSpan, 600, 150); // 600ms total, 150ms interval
+      flickerIntervalId = premiumFlicker(textSpan, 480, 120); // 480ms total, 120ms interval
     });
 
     button.addEventListener('mouseleave', () => {
