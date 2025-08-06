@@ -73,7 +73,6 @@ document.addEventListener('DOMContentLoaded', function() {
       textSpan.style.display = 'inline-block';
       textSpan.style.whiteSpace = 'nowrap';
 
-      flickerIntervalId = premiumFlicker(textSpan, 700, 250); // 700ms total, 150ms interval
       flickerIntervalId = premiumFlicker(textSpan, 500, 100); // 500ms total, 100ms interval
     });
 
