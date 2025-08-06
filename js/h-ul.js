@@ -1,35 +1,10 @@
 /****
- * PREMIUM Underline Effect v4 (with router support)
+ * PREMIUM Underline Effect v4
  * - Use data-underline-hover="true" for solo elements (headings, links, etc.)
- * - Use data-underline-hover="receive" for text INSIDE buttons, trigger via parent with data-underline-text-router="true"
- * - Button: <a ... data-underline-text-router="true"><span ... data-underline-hover="receive"></span></a>
- * - Text: <span ... data-underline-hover="true">...</span>
  */
 document.addEventListener('DOMContentLoaded', function() {
   // Block double hover for 2s to avoid glitches
   const underlineBlockTime = 2000; // ms
-
-  // For router use-case: trigger underline on child
-  document.querySelectorAll('[data-underline-text-router="true"]').forEach((router) => {
-    // Try to find the element that will receive underline
-    // Prioritize: [data-underline-hover="receive"], .btn-text, .btn-text.is-sec, span, div
-    let text =
-      router.querySelector('[data-underline-hover="receive"]') ||
-      router.querySelector('.btn-text') ||
-      router.querySelector('.btn-text.is-sec') ||
-      router.querySelector('span') ||
-      router.querySelector('div');
-    if (!text) {
-      console.warn(
-        'Router: missing text element for underline. Tried [data-underline-hover="receive"], .btn-text, .btn-text.is-sec, span, div inside:',
-        router
-      );
-      return;
-    }
-    // Add event listeners to the router, trigger underline on the chosen text element
-    router.addEventListener('mouseenter', () => triggerUnderline(text));
-    router.addEventListener('mouseleave', () => triggerUnderlineOut(text));
-  });
 
   // For regular inline underline (no router)
   document.querySelectorAll('[data-underline-hover="true"]').forEach((el) => {
@@ -92,22 +67,4 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     underlineAnimState.set(el, state);
   }
-
-  /******************************
-   * UNDERLINE EFFECT ON BUTTON TEXT ONLY
-   * Allows underline to follow just the text, not the whole button with padding.
-   * Usage: Add data-underline-hover="true" to button and ensure text inside has .btn-text class
-   * Example for Webflow: <a class="button is-secondary" ... data-underline-hover="true"><span class="btn-text">Text</span></a>
-   ******************************/
-  document.querySelectorAll('.button.is-secondary[data-underline-hover="true"]').forEach((button) => {
-    // Find the text span inside the button
-    const text = button.querySelector('.btn-text');
-    if (!text) {
-      console.warn('Button: missing .btn-text inside .button.is-secondary:', button);
-      return;
-    }
-    // Add underline effect only to text on button hover
-    button.addEventListener('mouseenter', () => text.classList.add('active'));
-    button.addEventListener('mouseleave', () => text.classList.remove('active'));
-  });
 });
