@@ -115,22 +115,25 @@ document.addEventListener('DOMContentLoaded', function() {
 document.addEventListener('DOMContentLoaded', function() {
   const scramButtons = document.querySelectorAll('[data-scramble-hover="true"]');
   scramButtons.forEach(button => {
-    const variant = button.getAttribute('data-button-variant') || 'dark';
+    // Czytaj dokładnie atrybut (atrybut *musi* być na elemencie po publikacji!)
+    const variant = button.getAttribute('data-button-variant') === 'light' ? 'light' : 'dark';
+
+    // Czytaj kolor hover z CSS variables
     const hoverColor = getComputedStyle(document.documentElement)
-      .getPropertyValue(variant === 'light'
-        ? '--bg-color--button-hover-light'
-        : '--bg-color--button-hover-dark'
+      .getPropertyValue(
+        variant === 'light'
+          ? '--bg-color--button-hover-light'
+          : '--bg-color--button-hover-dark'
       ).trim();
 
-    // Pobierz oryginalny kolor z CSS (zdefiniowany w stylach lub przez Webflow)
     let originalBg = getComputedStyle(button).backgroundColor;
 
     button.addEventListener('mouseenter', function() {
-      // Zawsze czytaj aktualny kolor, bo button może zmieniać się w locie (np. CMS!)
       originalBg = getComputedStyle(button).backgroundColor;
       button.style.transition = 'background-color 0.5s cubic-bezier(0.42,0,0.58,1)';
       button.style.backgroundColor = hoverColor;
     });
+
     button.addEventListener('mouseleave', function() {
       button.style.backgroundColor = originalBg;
     });
