@@ -1,9 +1,23 @@
-// PREMIUM underline effect: block "double hover" for 1s to avoid glitches
+/**
+ * PREMIUM Underline Effect
+ * - Dynamically sets underline animation speed based on text length
+ * - Blocks "double hover" for 1s to avoid glitches
+ * - Usage: Add data-underline-hover="true" to any text element
+ * - Requires matching CSS for .active state and transition using --underline-anim-duration
+ */
 
 // How long to block re-hover (must be >= transition duration)
 const underlineBlockTime = 1000; // ms, set to 1000ms = 1s
 
 document.querySelectorAll('[data-underline-hover="true"]').forEach((el) => {
+  // --------- DYNAMIC ANIMATION DURATION SETUP ---------
+  // Calculate duration: 0.02s per character, min 0.15s, max 0.45s
+  const textLength = el.textContent.trim().length;
+  let duration = Math.max(0.15, Math.min(0.02 * textLength, 0.45));
+  // Set CSS custom property for this element
+  el.style.setProperty('--underline-anim-duration', duration + 's');
+
+  // --------- PREMIUM BLOCK HOVER LOGIC ---------
   let hoverTimeout;
   let blockHover = false; // Prevent rapid multiple hovers
 
@@ -21,8 +35,9 @@ document.querySelectorAll('[data-underline-hover="true"]').forEach((el) => {
   });
 
   el.addEventListener('mouseleave', () => {
+    // Use the calculated duration for the transition delay
     hoverTimeout = setTimeout(() => {
       el.classList.remove('active');
-    }, 100); // Match your CSS transition (e.g., 100ms)
+    }, duration * 1000); // Delay matches transition duration for smoothness
   });
 });
