@@ -62,7 +62,7 @@
   background: currentColor;    /* Matches text color */
   transform: scaleX(0);        /* Line is hidden by default */
   transform-origin: left;      /* Always animate from the left edge */
-  transition: transform 0.3s cubic-bezier(.45,.05,.55,.95);
+  transition: transform 0.4s cubic-bezier(.45,.05,.55,.95);
   z-index: 1;
 }
 
