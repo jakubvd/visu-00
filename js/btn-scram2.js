@@ -1,7 +1,7 @@
 // Smooth, premium flicker — only some letters, always restore original text
 function premiumFlicker(element, duration = 500, interval = 100) {
   const original = element.dataset.originalText || element.textContent;
-  const chars = 'x';
+  const chars = 'abcdefghijklmnopqrstuvwxyz';
   let letters = original.split('');
   let time = 0;
   let tickCount = 0;
