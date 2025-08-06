@@ -58,3 +58,19 @@ document.querySelectorAll('[data-underline-hover="true"]').forEach((el) => {
     }
   });
 });
+
+/******************************
+ * UNDERLINE EFFECT ON BUTTON TEXT ONLY
+ * Allows underline to follow just the text, not the whole button with padding.
+ * Usage: Add data-underline-hover="true" to button and ensure text inside has .btn-text class
+ * Example for Webflow: <a class="button is-secondary" ... data-underline-hover="true"><span class="btn-text">Text</span></a>
+ ******************************/
+document.querySelectorAll('.button.is-secondary[data-underline-hover="true"]').forEach((button) => {
+  // Find the text span inside the button
+  const text = button.querySelector('.btn-text');
+  if (!text) return;
+
+  // Add underline effect only to text on button hover
+  button.addEventListener('mouseenter', () => text.classList.add('active'));
+  button.addEventListener('mouseleave', () => text.classList.remove('active'));
+});
