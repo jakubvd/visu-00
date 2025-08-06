@@ -1,4 +1,4 @@
-/**
+/****
  * PREMIUM Underline Effect v2 - Always finish IN before OUT
  * - Dynamically sets underline animation speed based on text length
  * - Blocks "double hover" for 2s to avoid glitches
@@ -6,7 +6,7 @@
  * - Requires matching CSS for .active state and transition using --underline-anim-duration
  */
 
-const underlineBlockTime = 2000; // ms - blokada przed ponownym hoverem
+const underlineBlockTime = 2000; // ms - block before re-hover
 
 document.querySelectorAll('[data-underline-hover="true"]').forEach((el) => {
   // --------- DYNAMIC ANIMATION DURATION SETUP ---------
