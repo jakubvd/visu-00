@@ -1,18 +1,45 @@
-// Smooth, premium flicker — only some letters, always restore original text
+// Smooth, premium flicker — only some letters, always restore original text - is ok
 function premiumFlicker(element, duration = 600, interval = 100) {
   const original = element.dataset.originalText || element.textContent;
   const chars = 'abcdefghijklmnopqrstuvwxyz';
   let letters = original.split('');
   let time = 0;
+  let tickCount = 0;
+
+  // Build array of eligible indexes (lowercase letters, not spaces)
+  const eligibleIndexes = [];
+  for (let i = 0; i < letters.length; i++) {
+    if (letters[i] !== ' ' && letters[i] === letters[i].toLowerCase()) {
+      eligibleIndexes.push(i);
+    }
+  }
+
+  // Randomly select ~50% of eligible indexes for scrambling
+  const scrambleCount = Math.ceil(eligibleIndexes.length / 2);
+  const scrambleIndexes = [];
+  const copyEligible = eligibleIndexes.slice();
+  while (scrambleIndexes.length < scrambleCount && copyEligible.length > 0) {
+    const randIdx = Math.floor(Math.random() * copyEligible.length);
+    scrambleIndexes.push(copyEligible.splice(randIdx, 1)[0]);
+  }
+
+  // Block breaking to 2 lines and lock width
+  element.style.whiteSpace = 'nowrap';
+  element.style.width = element.offsetWidth + 'px';
+  element.style.display = 'inline-block';
 
   const flicker = setInterval(() => {
-    // Pick 1 random index (not a space)
-    let idx = Math.floor(Math.random() * letters.length);
-    let tryCount = 0;
-    while (letters[idx] === ' ' && tryCount < 10) {
-      idx = Math.floor(Math.random() * letters.length);
-      tryCount++;
+    tickCount++;
+    if (tickCount <= 2) {
+      // For first two ticks, 80% chance to skip (gentle start)
+      if (Math.random() > 0.2) return;
+    } else {
+      if (Math.random() > 0.7) return; // Later, 30% skip as usual
     }
+
+    // Pick 1 random index from scrambleIndexes
+    if (scrambleIndexes.length === 0) return;
+    let idx = scrambleIndexes[Math.floor(Math.random() * scrambleIndexes.length)];
 
     const origChar = letters[idx];
     letters[idx] = chars[Math.floor(Math.random() * chars.length)];
@@ -21,12 +48,15 @@ function premiumFlicker(element, duration = 600, interval = 100) {
     setTimeout(() => {
       letters[idx] = origChar;
       element.textContent = letters.join('');
-    }, interval / 2);
+    }, interval / 1.2);
 
     time += interval;
     if (time >= duration) {
       clearInterval(flicker);
       element.textContent = original;
+      element.style.width = '';
+      element.style.display = '';
+      element.style.whiteSpace = '';
     }
   }, interval);
 
@@ -38,7 +68,7 @@ document.addEventListener('DOMContentLoaded', function() {
   // Select all buttons with the correct data attribute
   const scramButtons = document.querySelectorAll('[data-scramble-hover="true"]');
   if (!scramButtons.length) {
-    console.warn('No buttons found with [data-scramble-hover="true"]!');
+    console.warn('No buttons found with [scramble-hover="true"]!');
     return;
   }
 
@@ -53,87 +83,14 @@ document.addEventListener('DOMContentLoaded', function() {
     let flickerIntervalId = null;
     if (!textSpan.dataset.originalText) textSpan.dataset.originalText = textSpan.textContent;
 
-    // Get the button variant for hover color
-    const variant = button.getAttribute('data-button-variant') || 'dark';
-
-    // Store static bg vars for each variant
-    const hoverDark = 'var(--bg-color--button-hover-dark)';
-    const hoverLight = 'var(--bg-color--button-hover-light)';
-    // Store original static bg var for reset
-    const originalBg = button.getAttribute('data-bg-color') || 'var(--bg-color--button-main-bg-blue)';
-
-    function setHoverBg() {
-      button.style.transition = 'background-color 0.5s cubic-bezier(0.5,0,0,1)';
-      if (variant === 'dark') button.style.backgroundColor = hoverDark;
-      else button.style.backgroundColor = hoverLight;
-    }
-    function unsetHoverBg() {
-      button.style.transition = 'background-color 0.5s cubic-bezier(0.5,0,0,1)';
-      button.style.backgroundColor = originalBg;
-    }
-
-    // --------
-    // UPDATED: lockWidths() now locks ONLY the button width for smooth center alignment and zero shifting.
-    // Steps:
-    // 1. Remove any width-related styles from button and textSpan to measure natural width.
-    // 2. Measure button's natural width (including padding and content).
-    // 3. Lock only button's width, minWidth, and maxWidth to this measured width in px.
-    // 4. Do NOT set any width, minWidth, or maxWidth on textSpan.
-    // 5. Ensure textSpan keeps display: inline-block and white-space: nowrap for smooth animation (set only if necessary).
-    function lockWidths() {
-      // Remove width-related styles to get natural widths
-      button.style.width = '';
-      button.style.minWidth = '';
-      button.style.maxWidth = '';
-      textSpan.style.width = '';
-      textSpan.style.minWidth = '';
-      textSpan.style.maxWidth = '';
-
-      // Ensure textSpan has inline-block and nowrap for smooth flicker animation
-      // Only set if not already set to avoid unnecessary style changes
-      if (textSpan.style.display !== 'inline-block') {
-        textSpan.style.display = 'inline-block';
-      }
-      if (textSpan.style.whiteSpace !== 'nowrap') {
-        textSpan.style.whiteSpace = 'nowrap';
-      }
-
-      // Measure button's natural width (includes padding and content)
-      const btnWidth = button.offsetWidth;
-
-      // Lock button width only
-      button.style.width = btnWidth + 'px';
-      button.style.minWidth = btnWidth + 'px';
-      button.style.maxWidth = btnWidth + 'px';
-
-      // Do NOT set any width properties on textSpan to allow smooth center alignment and zero shifting
-    }
-
-    // UPDATED: unlockWidths() removes only width-related styles from button,
-    // and restores textSpan's display and whiteSpace to default (removes if set by script).
-    function unlockWidths() {
-      // Remove width locks from button
-      button.style.width = '';
-      button.style.minWidth = '';
-      button.style.maxWidth = '';
-
-      // Remove display and whiteSpace styles from textSpan if they were set by this script
-      if (textSpan.style.display === 'inline-block') {
-        textSpan.style.display = '';
-      }
-      if (textSpan.style.whiteSpace === 'nowrap') {
-        textSpan.style.whiteSpace = '';
-      }
-
-      // Do NOT touch any width-related styles on textSpan because we did not set them
-    }
-    // --------
-
     button.addEventListener('mouseenter', () => {
       if (flickerIntervalId !== null) return;
-      lockWidths();
-      setHoverBg();
-      flickerIntervalId = premiumFlicker(textSpan, 600, 90);
+      button.style.width = button.offsetWidth + 'px';
+      textSpan.style.width = textSpan.offsetWidth + 'px';
+      textSpan.style.display = 'inline-block';
+      textSpan.style.whiteSpace = 'nowrap';
+
+      flickerIntervalId = premiumFlicker(textSpan, 600, 100); // 500ms total, 50ms interval
     });
 
     button.addEventListener('mouseleave', () => {
@@ -142,8 +99,40 @@ document.addEventListener('DOMContentLoaded', function() {
         flickerIntervalId = null;
       }
       textSpan.textContent = textSpan.dataset.originalText;
-      unlockWidths();
-      unsetHoverBg();
+      const savedWidth = textSpan.getAttribute('data-width');
+      if (savedWidth) {
+        textSpan.style.width = savedWidth;
+      } else {
+        textSpan.style.width = '';
+      }
+      textSpan.style.display = '';
+      textSpan.style.whiteSpace = '';
+      button.style.width = '';
+    });
+  });
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+  const scramButtons = document.querySelectorAll('[data-scramble-hover="true"]');
+  scramButtons.forEach(button => {
+    const variant = button.getAttribute('data-button-variant') || 'dark';
+    const hoverColor = getComputedStyle(document.documentElement)
+      .getPropertyValue(variant === 'light'
+        ? '--bg-color--button-hover-light'
+        : '--bg-color--button-hover-dark'
+      ).trim();
+
+    // Pobierz oryginalny kolor z CSS (zdefiniowany w stylach lub przez Webflow)
+    let originalBg = getComputedStyle(button).backgroundColor;
+
+    button.addEventListener('mouseenter', function() {
+      // Zawsze czytaj aktualny kolor, bo button może zmieniać się w locie (np. CMS!)
+      originalBg = getComputedStyle(button).backgroundColor;
+      button.style.transition = 'background-color 0.5s cubic-bezier(0.42,0,0.58,1)';
+      button.style.backgroundColor = hoverColor;
+    });
+    button.addEventListener('mouseleave', function() {
+      button.style.backgroundColor = originalBg;
     });
   });
 });
