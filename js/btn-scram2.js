@@ -1,9 +1,10 @@
 // Smooth, premium flicker — only some letters, always restore original text
 function premiumFlicker(element, duration = 500, interval = 100) {
   const original = element.dataset.originalText || element.textContent;
-  const chars = 'abcdefghijklmnopqrstuvwxyz';
+  const chars = 'x';
   let letters = original.split('');
   let time = 0;
+  let tickCount = 0;
 
   // Block breaking to 2 lines and lock width
   element.style.whiteSpace = 'nowrap';
@@ -11,7 +12,13 @@ function premiumFlicker(element, duration = 500, interval = 100) {
   element.style.display = 'inline-block';
 
   const flicker = setInterval(() => {
-    if (Math.random() > 0.7) return; // Skip this interval 30% of the time
+    tickCount++;
+    if (tickCount <= 2) {
+      // For first two ticks, 80% chance to skip (gentle start)
+      if (Math.random() > 0.2) return;
+    } else {
+      if (Math.random() > 0.7) return; // Later, 30% skip as usual
+    }
 
     // Pick 1 random index (only lowercase letters)
     let idx = Math.floor(Math.random() * letters.length);
