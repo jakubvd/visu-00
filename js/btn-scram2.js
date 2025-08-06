@@ -1,14 +1,14 @@
 // Smooth, premium flicker — only some letters, always restore original text
 function premiumFlicker(element, duration = 500, interval = 100) {
   const original = element.dataset.originalText || element.textContent;
-  const chars = 'abcdefghijklmnopqrstuvwxyz';
+  const chars = 'ilftj';
   let letters = original.split('');
   let time = 0;
   let currentIndex = 0;
 
   // Block breaking to 2 lines and lock width
   element.style.whiteSpace = 'nowrap';
-  element.style.width = element.offsetWidth + 'px';
+  element.style.width = element.scrollWidth + 'px';
   element.style.display = 'inline-block';
 
   const flicker = setInterval(() => {
@@ -93,8 +93,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
     button.addEventListener('mouseenter', () => {
       if (flickerIntervalId !== null) return;
-      button.style.width = button.offsetWidth + 'px';
-      textSpan.style.width = textSpan.offsetWidth + 'px';
+      button.style.width = button.scrollWidth + 'px';
+      textSpan.style.width = textSpan.scrollWidth + 'px';
       textSpan.style.display = 'inline-block';
       textSpan.style.whiteSpace = 'nowrap';
 
