@@ -11,10 +11,13 @@ function premiumFlicker(element, duration = 800, interval = 150) {
   element.style.display = 'inline-block';
 
   const flicker = setInterval(() => {
-    // Pick 1 random index (not a space)
+    // Pick 1 random index (only lowercase letters)
     let idx = Math.floor(Math.random() * letters.length);
     let tryCount = 0;
-    while (letters[idx] === ' ' && tryCount < 10) {
+    while (
+      (letters[idx] === ' ' || letters[idx] !== letters[idx].toLowerCase()) &&
+      tryCount < 20
+    ) {
       idx = Math.floor(Math.random() * letters.length);
       tryCount++;
     }
