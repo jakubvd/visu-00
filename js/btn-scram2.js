@@ -11,6 +11,8 @@ function premiumFlicker(element, duration = 800, interval = 150) {
   element.style.display = 'inline-block';
 
   const flicker = setInterval(() => {
+    if (Math.random() > 0.7) return; // Skip this interval 30% of the time
+
     // Pick 1 random index (only lowercase letters)
     let idx = Math.floor(Math.random() * letters.length);
     let tryCount = 0;
@@ -29,7 +31,7 @@ function premiumFlicker(element, duration = 800, interval = 150) {
     setTimeout(() => {
       letters[idx] = origChar;
       element.textContent = letters.join('');
-    }, interval / 1.5);
+    }, interval / 1.2);
 
     time += interval;
     if (time >= duration) {
@@ -71,7 +73,7 @@ document.addEventListener('DOMContentLoaded', function() {
       textSpan.style.display = 'inline-block';
       textSpan.style.whiteSpace = 'nowrap';
 
-      flickerIntervalId = premiumFlicker(textSpan, 1600, 300); // 1600ms total, 300ms interval
+      flickerIntervalId = premiumFlicker(textSpan, 1000, 150); // 1000ms total, 150ms interval
     });
 
     button.addEventListener('mouseleave', () => {
