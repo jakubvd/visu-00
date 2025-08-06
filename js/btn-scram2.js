@@ -130,7 +130,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     button.addEventListener('mouseenter', function() {
       originalBg = getComputedStyle(button).backgroundColor;
-      button.style.transition = 'background-color 0.4s cubic-bezier(0.42,0,0.58,1)';
+      button.style.transition = 'background-color 0.4s cubic-bezier(.445, .05, .55, .95)';
       button.style.backgroundColor = hoverColor;
     });
 
