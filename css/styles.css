@@ -88,12 +88,5 @@
   transform-origin: right;      /* Ensure it shrinks from right */
 }
 
-/* ===================== Secondary Button Underline ===================== */
-/* Inherits universal underline animation.
-   No extra styles are needed unless you want a unique color or speed.
-   For a custom color (e.g., always light for dark bg), uncomment below: */
 
-.button.is-secondary[data-underline-hover="true"]::after {
-  background: var(--color--secondary-underline, currentColor);
-}
 
