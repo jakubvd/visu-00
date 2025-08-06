@@ -19,6 +19,6 @@ document.querySelectorAll('[data-underline-hover="true"]').forEach((el) => {
     hoverTimeout = setTimeout(() => {
       // Remove 'active' class so the line animates out (collapses)
       el.classList.remove('active');
-    }, 400); // Adjust if you change the transition time in your CSS!
+    }, 300); // Adjust if you change the transition time in your CSS!
   });
 });
