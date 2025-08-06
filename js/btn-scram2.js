@@ -21,6 +21,7 @@ function premiumFlicker(element, duration = 500, interval = 100) {
         element.style.width = '';
         element.style.display = '';
         element.style.whiteSpace = '';
+        return;
       }
       return;
     }
@@ -44,6 +45,7 @@ function premiumFlicker(element, duration = 500, interval = 100) {
         element.style.width = '';
         element.style.display = '';
         element.style.whiteSpace = '';
+        return;
       }
       return;
     }
@@ -65,6 +67,7 @@ function premiumFlicker(element, duration = 500, interval = 100) {
       element.style.width = '';
       element.style.display = '';
       element.style.whiteSpace = '';
+      return;
     }
   }, interval);
 
@@ -106,7 +109,7 @@ document.addEventListener('DOMContentLoaded', function() {
         clearInterval(flickerIntervalId);
         flickerIntervalId = null;
       }
-      textSpan.textContent = textSpan.dataset.originalText;
+      // textSpan.textContent = textSpan.dataset.originalText; // Removed redundant text reset
       const savedWidth = textSpan.getAttribute('data-width');
       if (savedWidth) {
         textSpan.style.width = savedWidth;
