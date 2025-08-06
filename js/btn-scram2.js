@@ -4,6 +4,7 @@ function premiumFlicker(element, duration = 500, interval = 100) {
   const chars = 'abcdefghijklmnopqrstuvwxyz';
   let letters = original.split('');
   let time = 0;
+  let currentIndex = 0;
 
   // Block breaking to 2 lines and lock width
   element.style.whiteSpace = 'nowrap';
@@ -11,28 +12,52 @@ function premiumFlicker(element, duration = 500, interval = 100) {
   element.style.display = 'inline-block';
 
   const flicker = setInterval(() => {
-    if (Math.random() > 0.7) return; // Skip this interval 30% of the time
-
-    // Pick 1 random index (only lowercase letters)
-    let idx = Math.floor(Math.random() * letters.length);
-    let tryCount = 0;
-    while (
-      (letters[idx] === ' ' || letters[idx] !== letters[idx].toLowerCase()) &&
-      tryCount < 20
-    ) {
-      idx = Math.floor(Math.random() * letters.length);
-      tryCount++;
+    if (Math.random() > 0.7) {
+      // Skip this interval 30% of the time
+      time += interval;
+      if (time >= duration) {
+        clearInterval(flicker);
+        element.textContent = original;
+        element.style.width = '';
+        element.style.display = '';
+        element.style.whiteSpace = '';
+      }
+      return;
     }
 
-    const origChar = letters[idx];
-    letters[idx] = chars[Math.floor(Math.random() * chars.length)];
+    // Find next lowercase letter index
+    let tries = 0;
+    while (
+      (letters[currentIndex] === ' ' || letters[currentIndex] !== letters[currentIndex].toLowerCase()) &&
+      tries < letters.length
+    ) {
+      currentIndex = (currentIndex + 1) % letters.length;
+      tries++;
+    }
+
+    if (tries >= letters.length) {
+      // No lowercase letters found, just skip flicker
+      time += interval;
+      if (time >= duration) {
+        clearInterval(flicker);
+        element.textContent = original;
+        element.style.width = '';
+        element.style.display = '';
+        element.style.whiteSpace = '';
+      }
+      return;
+    }
+
+    const origChar = letters[currentIndex];
+    letters[currentIndex] = chars[Math.floor(Math.random() * chars.length)];
     element.textContent = letters.join('');
 
     setTimeout(() => {
-      letters[idx] = origChar;
+      letters[currentIndex] = origChar;
       element.textContent = letters.join('');
     }, interval / 1.2);
 
+    currentIndex = (currentIndex + 1) % letters.length;
     time += interval;
     if (time >= duration) {
       clearInterval(flicker);
