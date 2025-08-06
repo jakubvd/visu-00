@@ -41,8 +41,17 @@
 }
 
 /* ===================== Universal Underline Hover Effect ===================== */
+/* --- UNIVERSAL ANIMATED UNDERLINE --- */
+/*
+   Applies a premium underline animation to any element with:
+   [data-underline-hover="true"]
+   - On hover: line expands left-to-right
+   - On hover off: line collapses left-to-right (from right)
+   - Animation speed is set by --underline-anim-duration (can be set per element)
+   - Underline matches text color (currentColor)
+   - 0.5px thick, always left-to-right for premium look
+*/
 
-/* Universal animated underline (left-to-right in/out) */
 [data-underline-hover="true"] {
   position: relative;
   display: inline-block;
@@ -62,7 +71,7 @@
   background: currentColor;    /* Matches text color */
   transform: scaleX(0);        /* Line is hidden by default */
   transform-origin: left;      /* Always animate from the left edge */
-  transition: transform 0.4s cubic-bezier(.45,.05,.55,.95);
+  transition: transform var(--underline-anim-duration, 0.4s) cubic-bezier(.45,.05,.55,.95);
   z-index: 1;
 }
 
@@ -78,3 +87,13 @@
   transform: scaleX(0);
   transform-origin: right;      /* Ensure it shrinks from right */
 }
+
+/* ===================== Secondary Button Underline ===================== */
+/* Inherits universal underline animation.
+   No extra styles are needed unless you want a unique color or speed.
+   For a custom color (e.g., always light for dark bg), uncomment below: */
+
+.button.is-secondary[data-underline-hover="true"]::after {
+  background: var(--color--secondary-underline, currentColor);
+}
+
