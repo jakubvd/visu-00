@@ -1,63 +1,84 @@
 /****
- * PREMIUM Underline Effect v3 - Always finish IN before OUT, no glitch on fast hover out
- * - Underline animates fully in even on fast mouseleave, then animates out
- * - Blocks double hover for 2s to avoid glitches
- * - Usage: Add data-underline-hover="true" to any text element
- * - Requires matching CSS for .active state and transition using --underline-anim-duration
+ * PREMIUM Underline Effect v4 (with router support)
+ * - Use data-underline-hover="true" for solo elements (headings, links, etc.)
+ * - Use data-underline-hover="receive" for text INSIDE buttons, trigger via parent with data-underline-text-router="true"
+ * - Button: <a ... data-underline-text-router="true"><span ... data-underline-hover="receive"></span></a>
+ * - Text: <span ... data-underline-hover="true">...</span>
  */
 
-const underlineBlockTime = 2000; // ms - block before re-hover
+// Block double hover for 2s to avoid glitches
+const underlineBlockTime = 2000; // ms
 
+// For router use-case: trigger underline on child
+document.querySelectorAll('[data-underline-text-router="true"]').forEach((router) => {
+  const text = router.querySelector('[data-underline-hover="receive"]');
+  if (!text) return;
+
+  router.addEventListener('mouseenter', () => triggerUnderline(text));
+  router.addEventListener('mouseleave', () => triggerUnderlineOut(text));
+});
+
+// For regular inline underline (no router)
 document.querySelectorAll('[data-underline-hover="true"]').forEach((el) => {
-  // Calculate dynamic duration: 0.02s per char, min 0.15s, max 0.45s
+  el.addEventListener('mouseenter', () => triggerUnderline(el));
+  el.addEventListener('mouseleave', () => triggerUnderlineOut(el));
+});
+
+// Store anim state per element (to allow both true/receive cases)
+const underlineAnimState = new WeakMap();
+
+// Universal underline IN function
+function triggerUnderline(el) {
+  // Calculate anim duration based on text length
   const textLength = el.textContent.trim().length;
   let duration = Math.max(0.15, Math.min(0.02 * textLength, 0.45)); // seconds
   el.style.setProperty('--underline-anim-duration', duration + 's');
 
-  let isAnimatingIn = false;
-  let isAnimatingOut = false;
-  let blockHover = false;
-  let hoverOutQueued = false;
+  let state = underlineAnimState.get(el) || {};
+  if (state.blockHover) return;
 
-  el.addEventListener('mouseenter', () => {
-    if (blockHover) return;
+  state.blockHover = true;
+  state.isAnimatingIn = true;
+  state.hoverOutQueued = false;
+  el.classList.add('active');
+  underlineAnimState.set(el, state);
 
-    blockHover = true;
-    isAnimatingIn = true;
-    hoverOutQueued = false;
-    el.classList.add('active');
-
-    // Allow OUT only after IN finishes
-    setTimeout(() => {
-      isAnimatingIn = false;
-      // If mouse left before IN finished, queue OUT now
-      if (hoverOutQueued) {
-        isAnimatingOut = true;
-        el.classList.remove('active');
-        setTimeout(() => {
-          isAnimatingOut = false;
-        }, duration * 1000);
-      }
-      // Unblock hover after IN+block time (to avoid rapid retrigger)
-      setTimeout(() => {
-        blockHover = false;
-      }, underlineBlockTime);
-    }, duration * 1000);
-  });
-
-  el.addEventListener('mouseleave', () => {
-    if (isAnimatingIn) {
-      hoverOutQueued = true; // Wait for IN to finish, then run OUT
-    } else if (!isAnimatingOut) {
-      // Only animate OUT if not already animating out
-      isAnimatingOut = true;
+  // After anim in finishes...
+  setTimeout(() => {
+    state.isAnimatingIn = false;
+    // If hover left early, start anim out
+    if (state.hoverOutQueued) {
+      state.isAnimatingOut = true;
       el.classList.remove('active');
       setTimeout(() => {
-        isAnimatingOut = false;
+        state.isAnimatingOut = false;
       }, duration * 1000);
     }
-  });
-});
+    // Unblock after block time
+    setTimeout(() => {
+      state.blockHover = false;
+      underlineAnimState.set(el, state);
+    }, underlineBlockTime);
+    underlineAnimState.set(el, state);
+  }, duration * 1000);
+}
+
+// Universal underline OUT function
+function triggerUnderlineOut(el) {
+  let state = underlineAnimState.get(el) || {};
+  const duration = parseFloat(el.style.getPropertyValue('--underline-anim-duration')) || 0.3;
+  if (state.isAnimatingIn) {
+    state.hoverOutQueued = true;
+  } else if (!state.isAnimatingOut) {
+    state.isAnimatingOut = true;
+    el.classList.remove('active');
+    setTimeout(() => {
+      state.isAnimatingOut = false;
+      underlineAnimState.set(el, state);
+    }, duration * 1000);
+  }
+  underlineAnimState.set(el, state);
+}
 
 /******************************
  * UNDERLINE EFFECT ON BUTTON TEXT ONLY
