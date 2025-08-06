@@ -1,5 +1,5 @@
 // Smooth, premium flicker — only some letters, always restore original text
-function premiumFlicker(element, duration = 800, interval = 150) {
+function premiumFlicker(element, duration = 700, interval = 150) {
   const original = element.dataset.originalText || element.textContent;
   const chars = 'abcdefghijklmnopqrstuvwxyz';
   let letters = original.split('');
@@ -73,7 +73,7 @@ document.addEventListener('DOMContentLoaded', function() {
       textSpan.style.display = 'inline-block';
       textSpan.style.whiteSpace = 'nowrap';
 
-      flickerIntervalId = premiumFlicker(textSpan, 1000, 150); // 1000ms total, 150ms interval
+      flickerIntervalId = premiumFlicker(textSpan, 700, 150); // 700ms total, 150ms interval
     });
 
     button.addEventListener('mouseleave', () => {
