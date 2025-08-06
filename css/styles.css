@@ -76,5 +76,5 @@
 /* On hover off, line collapses left-to-right */
 [data-underline-hover="true"]:not(:hover):not(.active)::after {
   transform: scaleX(0);
-  transform-origin: left;      /* Ensure it shrinks from left */
+  transform-origin: right;      /* Ensure it shrinks from right */
 }
