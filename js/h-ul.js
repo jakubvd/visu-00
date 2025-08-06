@@ -1,24 +1,28 @@
-// PREMIUM underline effect: let the line always reach the end on hover ON
-// and only start hiding after the animation finishes, for smoothness.
+// PREMIUM underline effect: block "double hover" for 1s to avoid glitches
 
-// Select all elements with underline effect enabled via data attribute
+// How long to block re-hover (must be >= transition duration)
+const underlineBlockTime = 1000; // ms, set to 1000ms = 1s
+
 document.querySelectorAll('[data-underline-hover="true"]').forEach((el) => {
   let hoverTimeout;
+  let blockHover = false; // Prevent rapid multiple hovers
 
-  // On mouse enter: trigger the underline animation
   el.addEventListener('mouseenter', () => {
-    // Cancel any pending timeout to avoid glitches if hovered rapidly
+    if (blockHover) return; // Ignore if within block window
+    blockHover = true;      // Block further hovers
+
     clearTimeout(hoverTimeout);
-    // Add 'active' class to start the underline animation (expand)
     el.classList.add('active');
+
+    // Unblock after specified time (make sure matches or exceeds animation)
+    setTimeout(() => {
+      blockHover = false;
+    }, underlineBlockTime);
   });
 
-  // On mouse leave: wait for the line to fully expand before hiding
   el.addEventListener('mouseleave', () => {
-    // Set a timeout matching the CSS transition duration (e.g., 500ms)
     hoverTimeout = setTimeout(() => {
-      // Remove 'active' class so the line animates out (collapses)
       el.classList.remove('active');
-    }, 100); // Adjust if you change the transition time in your CSS!
+    }, 100); // Match your CSS transition (e.g., 100ms)
   });
 });
