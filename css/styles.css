@@ -101,3 +101,8 @@
   outline: none !important;
 }
 
+/* Hide main button on mobile */
+@media (max-width: 480px) {
+  [data-display="desktop-only"] { display: none !important; }
+}
+
