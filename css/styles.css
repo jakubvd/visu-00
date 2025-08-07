@@ -101,27 +101,20 @@
   outline: none !important;
 }
 
-/* --- DATA DISPLAY ATTRIBUTES: CORE --- */
+/* ---  (visibility) --- */
+[data-visibility="all"]          { display: block !important; }
+[data-visibility="desktop-only"] { display: block !important; }
+[data-visibility="mobile-only"]  { display: none !important; }
 
-/* Default: All breakpoints */
-[data-display="all"]            { display: block !important; }
-
-/* Only desktop/tablet (hidden on mobile ≤480px) */
-[data-display="desktop-only"]   { display: block !important; }
-
-/* Only mobile (hidden powyżej 480px) */
-[data-display="mobile-only"]    { display: none !important; }
-
-/* Explicit display types */
-[data-display="block"]          { display: block !important; }
-[data-display="inline"]         { display: inline !important; }
-[data-display="flex"]           { display: flex !important; }
-[data-display="inline-flex"]    { display: inline-flex !important; }
-[data-display="horizontal"]     { display: inline-flex !important; flex-direction: row !important; }
-[data-display="vertical"]       { display: flex !important; flex-direction: column !important; }
-
-/* --- RESPONSIVE OVERRIDES --- */
 @media (max-width: 480px) {
-  [data-display="desktop-only"]  { display: none !important; }
-  [data-display="mobile-only"]   { display: block !important; }
+  [data-visibility="desktop-only"] { display: none !important; }
+  [data-visibility="mobile-only"]  { display: block !important; }
 }
+
+/* ---  (display) --- */
+[data-display-type="block"]        { display: block !important; }
+[data-display-type="inline"]       { display: inline !important; }
+[data-display-type="flex"]         { display: flex !important; }
+[data-display-type="inline-flex"]  { display: inline-flex !important; }
+[data-display-type="horizontal"]   { display: inline-flex !important; flex-direction: row !important; }
+[data-display-type="vertical"]     { display: flex !important; flex-direction: column !important; }
