@@ -101,8 +101,14 @@
   outline: none !important;
 }
 
-/* Hide main button on mobile */
+/* Desktop-only: hide on mobile ≤480px */
 @media (max-width: 480px) {
   [data-display="desktop-only"] { display: none !important; }
+}
+
+/* Mobile-only: hide everywhere except mobile ≤480px */
+[data-display="mobile-only"] { display: none !important; }
+@media (max-width: 480px) {
+  [data-display="mobile-only"] { display: block !important; }
 }
 
