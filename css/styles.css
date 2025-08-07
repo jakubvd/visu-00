@@ -101,14 +101,17 @@
   outline: none !important;
 }
 
-/* Desktop-only: hide on mobile ≤480px */
+/* --- Desktop only (wszystko oprócz mobile <=480px) --- */
 @media (max-width: 480px) {
   [data-display="desktop-only"] { display: none !important; }
 }
 
-/* Mobile-only: hide everywhere except mobile ≤480px */
+/* --- Mobile only (tylko mobile <=480px) --- */
 [data-display="mobile-only"] { display: none !important; }
 @media (max-width: 480px) {
   [data-display="mobile-only"] { display: block !important; }
 }
+
+/* --- All (zawsze widoczne) --- */
+[data-display="all"] { display: block !important; }
 
