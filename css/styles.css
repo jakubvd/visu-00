@@ -7,6 +7,14 @@
   -o-font-smoothing: antialiased;
 }
 
+/* Disable tap highlight color on mobile browsers */
+* {
+    -webkit-tap-highlight-color: transparent;
+    -moz-tap-highlight-color: transparent;
+    -ms-tap-highlight-color: transparent;
+    -o-tap-highlight-color: transparent;
+}
+
 /* ===================== General UI States / CMS Items list categories reveal ===================== */
 
 /* Fade-out effect for elements */
