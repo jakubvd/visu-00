@@ -93,17 +93,41 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
-    // Accessibility: Ensure only visible cards are tabbable by toggling `inert`
+    /**
+     * Accessibility: Only focusable elements (e.g., <button>, <a>, [tabindex], etc.) inside slider cards
+     * are made unfocusable via the `inert` attribute when the card is not fully visible.
+     * The card elements themselves are never set to `inert` (so swipe/drag is always possible).
+     * On each update:
+     *   - For cards fully visible (idx in visible range), REMOVE `inert` from all focusable children.
+     *   - For cards outside the visible range, ADD `inert` to all focusable children.
+     */
     function updateSliderCardFocus() {
         cards = getCards(); // always refresh list
         const firstVisible = currentIndex;
         const lastVisible = currentIndex + visibleCardsCount - 1;
+        // Selector for focusable elements (common a11y targets)
+        const focusableSelector = [
+            'a[href]',
+            'area[href]',
+            'button:not([disabled])',
+            'input:not([type="hidden"]):not([disabled])',
+            'select:not([disabled])',
+            'textarea:not([disabled])',
+            'iframe',
+            'object',
+            'embed',
+            '[contenteditable]',
+            '[tabindex]:not([tabindex="-1"])'
+        ].join(',');
         cards.forEach((card, idx) => {
-            if (idx >= firstVisible && idx <= lastVisible) {
-                card.removeAttribute('inert');
-            } else {
-                card.setAttribute('inert', '');
-            }
+            const focusableEls = card.querySelectorAll(focusableSelector);
+            focusableEls.forEach(el => {
+                if (idx >= firstVisible && idx <= lastVisible) {
+                    el.removeAttribute('inert');
+                } else {
+                    el.setAttribute('inert', '');
+                }
+            });
         });
     }
 
