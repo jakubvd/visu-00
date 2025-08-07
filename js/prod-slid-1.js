@@ -93,6 +93,20 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
+    // Accessibility: Ensure only visible cards are tabbable by toggling `inert`
+    function updateSliderCardFocus() {
+        cards = getCards(); // always refresh list
+        const firstVisible = currentIndex;
+        const lastVisible = currentIndex + visibleCardsCount - 1;
+        cards.forEach((card, idx) => {
+            if (idx >= firstVisible && idx <= lastVisible) {
+                card.removeAttribute('inert');
+            } else {
+                card.setAttribute('inert', '');
+            }
+        });
+    }
+
     // Move the slider to next/previous group (direction: 'left' = next, 'right' = previous)
     // Uses premium maxIndex to prevent overscroll and blank spaces
     function moveSlider(direction) {
@@ -115,6 +129,7 @@ document.addEventListener("DOMContentLoaded", function () {
         sliderWrap.style.transform = `translateX(${-currentIndex * cardWidth}px)`;
         prevTranslate = -currentIndex * cardWidth;
         updateArrows();
+        updateSliderCardFocus();
     }
 
     // Handle start of swipe/drag
@@ -180,6 +195,7 @@ document.addEventListener("DOMContentLoaded", function () {
         sliderWrap.style.transform = `translateX(${prevTranslate}px)`;
         sliderWrap.style.transition = "none";
         updateArrows();
+        updateSliderCardFocus();
     }
 
     // Bind all necessary event listeners
@@ -221,6 +237,7 @@ document.addEventListener("DOMContentLoaded", function () {
         sliderWrap.style.transition = "none";
         addEventListeners();
         updateArrows();
+        updateSliderCardFocus();
     }
 
     // Start!
