@@ -66,19 +66,27 @@ document.addEventListener("DOMContentLoaded", function () {
         return Math.floor((viewportWidth + gap) / (cardWidth + gap)) || 1;
     }
 
-    // Improved: Calculate the max slide index so that the last card is always fully visible (pixel-perfect, no dead zone)
+    // Calculate the max slide index so that the "next" arrow is only disabled when the last card is 100% visible.
     function getMaxIndex() {
         const sliderViewport = sliderWrap.parentElement;
         if (!sliderViewport) return 0;
         const viewportWidth = sliderViewport.offsetWidth;
         const totalCards = getCards().length;
-        const totalCardsWidth = totalCards * cardWidth + (totalCards - 1) * gap;
-        const maxTranslate = totalCardsWidth - viewportWidth;
-        if (maxTranslate <= 0) return 0;
+        if (cardWidth === 0) return 0;
 
-        // Instead of full card steps, calculate how many pixels you can scroll (so the last card is flush right)
-        // This gives the most precise, pixel-perfect maxIndex for all breakpoints.
-        return Math.max(0, Math.round(maxTranslate / (cardWidth + gap)));
+        // Total pixel width of all cards and gaps
+        const totalCardsWidth = totalCards * cardWidth + (totalCards - 1) * gap;
+
+        // If all cards fit (no scrolling needed)
+        if (totalCardsWidth <= viewportWidth) return 0;
+
+        // Calculate the *minimum* index so the last card's right edge is at least at the viewport's right edge
+        // Each index moves by cardWidth + gap, so:
+        // maxIndex = ceil((totalCardsWidth - viewportWidth) / (cardWidth + gap))
+        // But if the last card is partially visible, allow to move one more step
+        const maxIndex = Math.ceil((totalCardsWidth - viewportWidth) / (cardWidth + gap));
+
+        return Math.max(0, maxIndex);
     }
 
     // Enable or disable arrows based on current position
