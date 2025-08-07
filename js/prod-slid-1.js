@@ -33,10 +33,31 @@ document.addEventListener("DOMContentLoaded", function () {
         return Math.floor(viewportWidth / cardWidth) || 1;
     }
 
-    // Utility: get card width (assumes all cards same width)
+    // Utility: get card width + gap (reads gap from CSS, falls back to 2rem if not set)
     function getCardWidth() {
         cards = getCards(); // Update cards in case DOM changed
-        return cards[0] ? cards[0].offsetWidth : 0;
+        if (!cards[0]) return 0;
+
+        // Read gap from computed style (assumes flex or grid layout with 'gap' set)
+        const computedStyle = window.getComputedStyle(sliderWrap);
+        let gap = 0;
+
+        // Try to read 'gap', fallback to 'column-gap', fallback to 2rem if not set
+        const gapStr = computedStyle.getPropertyValue('gap')
+            || computedStyle.getPropertyValue('column-gap')
+            || computedStyle.getPropertyValue('grid-column-gap')
+            || '2rem'; // fallback if gap not set
+        if (gapStr.includes('rem')) {
+            // Convert rem to px
+            const rootFontSize = parseFloat(getComputedStyle(document.documentElement).fontSize);
+            gap = parseFloat(gapStr) * rootFontSize;
+        } else if (gapStr.includes('px')) {
+            gap = parseFloat(gapStr);
+        } else {
+            gap = parseFloat(gapStr) || 0;
+        }
+
+        return cards[0].offsetWidth + gap;
     }
 
     // Premium: Calculate the max slide index so that the last card is fully visible
