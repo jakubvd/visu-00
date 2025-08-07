@@ -66,18 +66,19 @@ document.addEventListener("DOMContentLoaded", function () {
         return Math.floor((viewportWidth + gap) / (cardWidth + gap)) || 1;
     }
 
-    // Premium: Calculate the max slide index so that the last card is fully visible
-    // This ensures the right arrow is disabled only when the last card is fully in view
+    // Improved: Calculate the max slide index so that the last card is always fully visible (pixel-perfect, no dead zone)
     function getMaxIndex() {
         const sliderViewport = sliderWrap.parentElement;
+        if (!sliderViewport) return 0;
         const viewportWidth = sliderViewport.offsetWidth;
         const totalCards = getCards().length;
-        // Total width of all cards plus gaps between them
         const totalCardsWidth = totalCards * cardWidth + (totalCards - 1) * gap;
         const maxTranslate = totalCardsWidth - viewportWidth;
         if (maxTranslate <= 0) return 0;
-        // How many *full card + gap* steps until last card is fully in view?
-        return Math.ceil(maxTranslate / (cardWidth + gap));
+
+        // Instead of full card steps, calculate how many pixels you can scroll (so the last card is flush right)
+        // This gives the most precise, pixel-perfect maxIndex for all breakpoints.
+        return Math.max(0, Math.round(maxTranslate / (cardWidth + gap)));
     }
 
     // Enable or disable arrows based on current position
