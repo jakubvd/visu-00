@@ -1,29 +1,11 @@
 document.addEventListener("DOMContentLoaded", function () {
-    // Gap between cards is dynamically pulled from the CSS variable '--_ui-styles---stroke--gap--slider-products' (set in Webflow variable modes/UI).
-    // Helper: get gap value from CSS variable, parsing units like px, rem etc.
-    function getGap() {
-        // We read the computed style of the slider wrapper to get the gap value dynamically.
-        const sliderWrap = document.querySelector(".home-products_slider-wrap.w-dyn-items");
-        if (!sliderWrap) return 0;
-        const style = getComputedStyle(sliderWrap);
-        let gapValue = style.getPropertyValue('--_ui-styles---stroke--gap--slider-products').trim();
-        if (!gapValue) return 0;
-        // Parse the gap value supporting px, rem, em etc.
-        // Create a temporary element to parse the value correctly
-        const tempEl = document.createElement('div');
-        tempEl.style.width = gapValue;
-        document.body.appendChild(tempEl);
-        const pixels = tempEl.offsetWidth;
-        document.body.removeChild(tempEl);
-        return pixels;
-    }
-
     // Main slider wrapper (match your CMS collection wrapper)
     const sliderWrap = document.querySelector(".home-products_slider-wrap.w-dyn-items");
     if (!sliderWrap) return;
 
     // Arrow navigation (Webflow Link Blocks with IDs)
-    // Removed hardcoded leftArrow and rightArrow selectors
+    const leftArrow = document.getElementById("p-b-s-a-left");
+    const rightArrow = document.getElementById("p-b-s-a-right");
 
     // Get all cards in the slider (refreshes each time for accuracy)
     function getCards() {
@@ -35,7 +17,6 @@ document.addEventListener("DOMContentLoaded", function () {
     const swipeThreshold = 10;  // Minimum px to trigger swipe
     let currentIndex = 0;       // Index of currently active card group (visible window)
     let cardWidth = 0;          // Width of a single card
-    let gap = 0;                // Gap between cards, dynamically read from CSS variable
     let isDragging = false;     // Is swipe active?
     let startX = 0;             // Start X position of swipe
     let startY = 0;             // Start Y position of swipe
@@ -43,50 +24,31 @@ document.addEventListener("DOMContentLoaded", function () {
     let currentTranslate = 0;   // Current translate during swipe
     let isArrowClick = false;   // Track if navigation was from arrow
     let visibleCardsCount = 1;  // How many cards are visible at once
-
-    // Utility: get card width (assumes all cards same width)
-    // Returns card width plus gap (except for last card in row)
-    function getCardWidth() {
-        cards = getCards(); // Update cards in case DOM changed
-        if (!cards[0]) return 0;
-        return cards[0].offsetWidth;
-    }
-
     // Helper: count how many cards fit in the viewport at once
     function getVisibleCardsCount() {
         // Assumes the parent of sliderWrap is the viewport (with overflow:hidden)
         const sliderViewport = sliderWrap.parentElement;
         if (!sliderViewport) return 1;
         const viewportWidth = sliderViewport.offsetWidth;
-        // Each card occupies cardWidth plus gap except last card
-        // We calculate how many cards fit considering gap between cards
-        // visibleCardsCount * cardWidth + (visibleCardsCount - 1) * gap <= viewportWidth
-        // => visibleCardsCount <= (viewportWidth + gap) / (cardWidth + gap)
-        if (cardWidth === 0) return 1;
-        return Math.floor((viewportWidth + gap) / (cardWidth + gap)) || 1;
+        return Math.floor(viewportWidth / cardWidth) || 1;
     }
 
-    // Calculate the max slide index so that the "next" arrow is only disabled when the last card is 100% visible.
+    // Utility: get card width (assumes all cards same width)
+    function getCardWidth() {
+        cards = getCards(); // Update cards in case DOM changed
+        return cards[0] ? cards[0].offsetWidth : 0;
+    }
+
+    // Premium: Calculate the max slide index so that the last card is fully visible
+    // This ensures the right arrow is disabled only when the last card is fully in view
     function getMaxIndex() {
         const sliderViewport = sliderWrap.parentElement;
-        if (!sliderViewport) return 0;
         const viewportWidth = sliderViewport.offsetWidth;
-        const totalCards = getCards().length;
-        if (cardWidth === 0) return 0;
-
-        // Total pixel width of all cards and all gaps
-        const totalCardsWidth = totalCards * cardWidth + (totalCards - 1) * gap;
-
-        // If all cards fit (no scrolling needed)
-        if (totalCardsWidth <= viewportWidth) return 0;
-
-        // Correct logic: Only allow sliding while the last card would NOT be fully visible
-        // So the right arrow is enabled if the last card's right edge is out of view
-        // Stop at the last index where last card is exactly aligned or just comes into full view
-        // We use Math.ceil for safety, but clamp so we don't go past max
-        const maxIndex = Math.max(0, Math.ceil((totalCardsWidth - viewportWidth) / (cardWidth + gap)));
-
-        return maxIndex;
+        const totalCardsWidth = sliderWrap.scrollWidth;
+        const maxTranslate = totalCardsWidth - viewportWidth;
+        if (maxTranslate <= 0) return 0;
+        // How many *full card* steps until last card is fully in view?
+        return Math.ceil(maxTranslate / cardWidth);
     }
 
     // Enable or disable arrows based on current position
@@ -94,31 +56,19 @@ document.addEventListener("DOMContentLoaded", function () {
     function updateArrows() {
         cards = getCards();
         const maxIndex = getMaxIndex();
-        // Update all arrows with data-slider-products-arrow attribute
-        const arrows = document.querySelectorAll('[data-slider-products-arrow]');
-        arrows.forEach(arrow => {
-            if (arrow.classList.contains('is-disabled')) {
-                arrow.classList.remove('is-disabled');
+        if (leftArrow) {
+            if (currentIndex === 0) {
+                leftArrow.classList.add("is-disabled");
+            } else {
+                leftArrow.classList.remove("is-disabled");
             }
-        });
-
-        // Disable prev/left arrows if at start
-        if (currentIndex === 0) {
-            arrows.forEach(arrow => {
-                const dir = arrow.getAttribute('data-slider-products-arrow');
-                if (dir === 'prev' || dir === 'left') {
-                    arrow.classList.add('is-disabled');
-                }
-            });
         }
-        // Disable next/right arrows if at max
-        if (currentIndex >= maxIndex) {
-            arrows.forEach(arrow => {
-                const dir = arrow.getAttribute('data-slider-products-arrow');
-                if (dir === 'next' || dir === 'right') {
-                    arrow.classList.add('is-disabled');
-                }
-            });
+        if (rightArrow) {
+            if (currentIndex >= maxIndex) {
+                rightArrow.classList.add("is-disabled");
+            } else {
+                rightArrow.classList.remove("is-disabled");
+            }
         }
     }
 
@@ -141,9 +91,8 @@ document.addEventListener("DOMContentLoaded", function () {
         isArrowClick = false; // Reset trigger
 
         // Move slider to the correct position
-        // Each step moves cardWidth + gap pixels
-        sliderWrap.style.transform = `translateX(${-currentIndex * (cardWidth + gap)}px)`;
-        prevTranslate = -currentIndex * (cardWidth + gap);
+        sliderWrap.style.transform = `translateX(${-currentIndex * cardWidth}px)`;
+        prevTranslate = -currentIndex * cardWidth;
         updateArrows();
     }
 
@@ -172,7 +121,7 @@ document.addEventListener("DOMContentLoaded", function () {
         currentTranslate = prevTranslate + diffX;
 
         // Boundaries: no sliding past first/last visible group
-        const maxTranslate = -((getCards().length - visibleCardsCount) * (cardWidth + gap));
+        const maxTranslate = -(getCards().length - visibleCardsCount) * cardWidth;
         const minTranslate = 0;
         currentTranslate = Math.max(Math.min(currentTranslate, minTranslate), maxTranslate);
 
@@ -195,19 +144,18 @@ document.addEventListener("DOMContentLoaded", function () {
         } else {
             // Not enough movement: snap back to current card
             sliderWrap.style.transition = "transform 0.1s ease-out";
-            sliderWrap.style.transform = `translateX(${-currentIndex * (cardWidth + gap)}px)`;
+            sliderWrap.style.transform = `translateX(${-currentIndex * cardWidth}px)`;
         }
     }
 
-    // Handle window resize: re-calculate card width, gap, visible count and adjust slider position
+    // Handle window resize: re-calculate card width, visible count and adjust slider position
     function handleResize() {
         cardWidth = getCardWidth();
-        gap = getGap();
         visibleCardsCount = getVisibleCardsCount();
         // Clamp currentIndex to valid range after resize using premium maxIndex
         const maxIndex = getMaxIndex();
         currentIndex = Math.max(0, Math.min(currentIndex, maxIndex));
-        prevTranslate = -currentIndex * (cardWidth + gap);
+        prevTranslate = -currentIndex * cardWidth;
         sliderWrap.style.transform = `translateX(${prevTranslate}px)`;
         sliderWrap.style.transition = "none";
         updateArrows();
@@ -227,27 +175,26 @@ document.addEventListener("DOMContentLoaded", function () {
         // Window
         window.addEventListener("resize", handleResize);
 
-        // Arrows are now selected via [data-slider-products-arrow], so you can add arrows anywhere and use data-slider-products-arrow='prev'/'next'.
-        const arrows = document.querySelectorAll('[data-slider-products-arrow]');
-        arrows.forEach(arrow => {
-            arrow.addEventListener('click', function(event) {
-                event.preventDefault();
-                if (arrow.classList.contains('is-disabled')) return;
-                const dir = arrow.getAttribute('data-slider-products-arrow');
+        // Arrows (prevent default link action!)
+        if (leftArrow) leftArrow.addEventListener("click", function (event) {
+            event.preventDefault();
+            if (!leftArrow.classList.contains("is-disabled")) {
+                isArrowClick = true; // Mark arrow trigger
+                moveSlider("right");
+            }
+        });
+        if (rightArrow) rightArrow.addEventListener("click", function (event) {
+            event.preventDefault();
+            if (!rightArrow.classList.contains("is-disabled")) {
                 isArrowClick = true;
-                if (dir === 'prev' || dir === 'left') {
-                    moveSlider("right");
-                } else if (dir === 'next' || dir === 'right') {
-                    moveSlider("left");
-                }
-            });
+                moveSlider("left");
+            }
         });
     }
 
     // Initialize slider: set up, bind listeners, update state
     function initSlider() {
         cardWidth = getCardWidth();
-        gap = getGap();
         visibleCardsCount = getVisibleCardsCount();
         sliderWrap.style.transform = `translateX(0)`;
         sliderWrap.style.transition = "none";
