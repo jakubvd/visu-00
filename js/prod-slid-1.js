@@ -93,6 +93,27 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
+    // Update tabindex and aria-hidden based on visibility in viewport
+    function updateSlideAccessibility() {
+        const cards = getCards();
+        cards.forEach(slide => {
+            const rect = slide.getBoundingClientRect();
+            const fullyVisible =
+                rect.top >= 0 &&
+                rect.left >= 0 &&
+                rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) &&
+                rect.right <= (window.innerWidth || document.documentElement.clientWidth);
+
+            if (fullyVisible) {
+                slide.setAttribute('tabindex', '0');
+                slide.removeAttribute('aria-hidden');
+            } else {
+                slide.setAttribute('tabindex', '-1');
+                slide.setAttribute('aria-hidden', 'true');
+            }
+        });
+    }
+
     // Move the slider to next/previous group (direction: 'left' = next, 'right' = previous)
     // Uses premium maxIndex to prevent overscroll and blank spaces
     function moveSlider(direction) {
@@ -115,6 +136,7 @@ document.addEventListener("DOMContentLoaded", function () {
         sliderWrap.style.transform = `translateX(${-currentIndex * cardWidth}px)`;
         prevTranslate = -currentIndex * cardWidth;
         updateArrows();
+        updateSlideAccessibility();
     }
 
     // Handle start of swipe/drag
@@ -180,6 +202,7 @@ document.addEventListener("DOMContentLoaded", function () {
         sliderWrap.style.transform = `translateX(${prevTranslate}px)`;
         sliderWrap.style.transition = "none";
         updateArrows();
+        updateSlideAccessibility();
     }
 
     // Bind all necessary event listeners
@@ -221,6 +244,7 @@ document.addEventListener("DOMContentLoaded", function () {
         sliderWrap.style.transition = "none";
         addEventListeners();
         updateArrows();
+        updateSlideAccessibility();
     }
 
     // Start!
