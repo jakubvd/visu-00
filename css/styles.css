@@ -101,20 +101,24 @@
   outline: none !important;
 }
 
-/* ---  (visibility) --- */
-[data-visibility="all"]          { display: block !important; }
-[data-visibility="desktop-only"] { display: block !important; }
-[data-visibility="mobile-only"]  { display: none !important; }
-
-@media (max-width: 480px) {
-  [data-visibility="desktop-only"] { display: none !important; }
-  [data-visibility="mobile-only"]  { display: block !important; }
-}
-
-/* ---  (display) --- */
+/* --- Display Types (less important, can be overridden by visibility) --- */
 [data-display-type="block"]        { display: block !important; }
 [data-display-type="inline"]       { display: inline !important; }
 [data-display-type="flex"]         { display: flex !important; }
 [data-display-type="inline-flex"]  { display: inline-flex !important; }
 [data-display-type="horizontal"]   { display: inline-flex !important; flex-direction: row !important; }
 [data-display-type="vertical"]     { display: flex !important; flex-direction: column !important; }
+
+/* --- Visibility Control (most important, always wins) --- */
+[data-visibility="desktop-only"] { display: inline-flex !important; }  /* Shown on desktop */
+[data-visibility="mobile-only"]  { display: none !important; }         /* Hidden on desktop */
+[data-visibility="all"]          { display: inline-flex !important; }  /* Shown everywhere */
+
+@media (max-width: 480px) {
+  /* Desktop-only is hidden on mobile */
+  [data-visibility="desktop-only"] { display: none !important; }
+  /* Mobile-only is visible on mobile */
+  [data-visibility="mobile-only"]  { display: inline-flex !important; }
+  /* All is visible everywhere */
+  [data-visibility="all"]          { display: inline-flex !important; }
+}
