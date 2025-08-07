@@ -96,5 +96,8 @@
   transform-origin: right;      /* Ensure it shrinks from right */
 }
 
-
+/* Lock buttons in slider froum tab shift */
+[data-slider-card="true"] [inert] *:focus {
+  outline: none !important;
+}
 
