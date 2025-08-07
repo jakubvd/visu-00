@@ -74,19 +74,19 @@ document.addEventListener("DOMContentLoaded", function () {
         const totalCards = getCards().length;
         if (cardWidth === 0) return 0;
 
-        // Total pixel width of all cards and gaps
+        // Total pixel width of all cards and all gaps
         const totalCardsWidth = totalCards * cardWidth + (totalCards - 1) * gap;
 
         // If all cards fit (no scrolling needed)
         if (totalCardsWidth <= viewportWidth) return 0;
 
-        // Calculate the *minimum* index so the last card's right edge is at least at the viewport's right edge
-        // Each index moves by cardWidth + gap, so:
-        // maxIndex = ceil((totalCardsWidth - viewportWidth) / (cardWidth + gap))
-        // But if the last card is partially visible, allow to move one more step
-        const maxIndex = Math.ceil((totalCardsWidth - viewportWidth) / (cardWidth + gap));
+        // Correct logic: Only allow sliding while the last card would NOT be fully visible
+        // So the right arrow is enabled if the last card's right edge is out of view
+        // Stop at the last index where last card is exactly aligned or just comes into full view
+        // We use Math.ceil for safety, but clamp so we don't go past max
+        const maxIndex = Math.max(0, Math.ceil((totalCardsWidth - viewportWidth) / (cardWidth + gap)));
 
-        return Math.max(0, maxIndex);
+        return maxIndex;
     }
 
     // Enable or disable arrows based on current position
