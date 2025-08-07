@@ -44,21 +44,7 @@ document.addEventListener("DOMContentLoaded", function () {
     function getMaxIndex() {
         const sliderViewport = sliderWrap.parentElement;
         const viewportWidth = sliderViewport.offsetWidth;
-        const totalCardsWidthRaw = sliderWrap.scrollWidth;
-
-        // Compute the gap between cards from CSS gap property (assumed equal for all gaps)
-        const computedStyle = window.getComputedStyle(sliderWrap);
-        const gapStr = computedStyle.getPropertyValue('gap') || computedStyle.getPropertyValue('grid-column-gap') || computedStyle.getPropertyValue('column-gap') || '0px';
-        const gap = parseFloat(gapStr) || 0;
-
-        const numberOfCards = getCards().length;
-
-        // Total gap width between cards = gap * (number of cards - 1)
-        const totalGap = gap * (numberOfCards - 1);
-
-        // Subtract total gap from total cards width to get effective width of cards only
-        const totalCardsWidth = totalCardsWidthRaw - totalGap;
-
+        const totalCardsWidth = sliderWrap.scrollWidth;
         const maxTranslate = totalCardsWidth - viewportWidth;
         if (maxTranslate <= 0) return 0;
         // How many *full card* steps until last card is fully in view?
