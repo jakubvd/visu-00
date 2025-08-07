@@ -1,5 +1,5 @@
 document.addEventListener("DOMContentLoaded", function () {
-    // Main slider wrapper (match your CMS collection wrapper)
+    // Main slider wrapper (match your CMS collection wrapper) - closest
     const sliderWrap = document.querySelector(".home-products_slider-wrap.w-dyn-items");
     if (!sliderWrap) return;
 
